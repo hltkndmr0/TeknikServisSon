@@ -1,0 +1,15 @@
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/bin/Debug/net10.0/TeknikServis.Application.deps.json
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/bin/Debug/net10.0/TeknikServis.Application.dll
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/bin/Debug/net10.0/TeknikServis.Application.pdb
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/bin/Debug/net10.0/TeknikServis.Domain.dll
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/bin/Debug/net10.0/TeknikServis.Domain.pdb
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikServis.Application.csproj.AssemblyReference.cache
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikServis.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikServis.Application.AssemblyInfoInputs.cache
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikServis.Application.AssemblyInfo.cs
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikServis.Application.csproj.CoreCompileInputs.cache
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikSe.8F1B057F.Up2Date
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikServis.Application.dll
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/refint/TeknikServis.Application.dll
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/TeknikServis.Application.pdb
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Application/obj/Debug/net10.0/ref/TeknikServis.Application.dll

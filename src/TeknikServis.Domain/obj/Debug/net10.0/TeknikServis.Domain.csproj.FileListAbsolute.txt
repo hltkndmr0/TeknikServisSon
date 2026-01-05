@@ -1,0 +1,11 @@
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/bin/Debug/net10.0/TeknikServis.Domain.deps.json
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/bin/Debug/net10.0/TeknikServis.Domain.dll
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/bin/Debug/net10.0/TeknikServis.Domain.pdb
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/TeknikServis.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/TeknikServis.Domain.AssemblyInfoInputs.cache
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/TeknikServis.Domain.AssemblyInfo.cs
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/TeknikServis.Domain.csproj.CoreCompileInputs.cache
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/TeknikServis.Domain.dll
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/refint/TeknikServis.Domain.dll
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/TeknikServis.Domain.pdb
+/Users/hltkandmr/Desktop/projects/TeknikServis/src/TeknikServis.Domain/obj/Debug/net10.0/ref/TeknikServis.Domain.dll
