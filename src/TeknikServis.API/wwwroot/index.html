@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teknik Servis - Giriş</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="login-logo">🔧</div>
+                <h1>Teknik Servis</h1>
+                <p>Hesabınıza giriş yapın</p>
+            </div>
+            
+            <!-- Login Tabs -->
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchTab('dukkan')">Dükkan</button>
+                <button class="login-tab" onclick="switchTab('admin')">Yönetici</button>
+                <button class="login-tab" onclick="switchTab('kayit')">Kayıt</button>
+            </div>
+            
+            <!-- Dükkan Login Form -->
+            <form id="dukkan-form" class="login-form active" onsubmit="handleDukkanLogin(event)">
+                <div class="form-group">
+                    <label for="firma-kodu">Firma Kodu</label>
+                    <input type="text" id="firma-kodu" name="firmaKodu" class="form-control" placeholder="ABC123" required>
+                </div>
+                <div class="form-group">
+                    <label for="dukkan-email">E-posta</label>
+                    <input type="email" id="dukkan-email" name="email" class="form-control" placeholder="ornek@firma.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="dukkan-sifre">Şifre</label>
+                    <input type="password" id="dukkan-sifre" name="sifre" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="dukkan-login-btn">Giriş Yap</button>
+            </form>
+            
+            <!-- Admin Login Form -->
+            <form id="admin-form" class="login-form" onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label for="admin-email">E-posta</label>
+                    <input type="email" id="admin-email" name="email" class="form-control" placeholder="admin@teknikservis.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="admin-sifre">Şifre</label>
+                    <input type="password" id="admin-sifre" name="sifre" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="admin-login-btn">Yönetici Girişi</button>
+            </form>
+            
+            <!-- Kayıt Form -->
+            <form id="kayit-form" class="login-form" onsubmit="handleKayitTalep(event)">
+                <div class="alert alert-info">
+                    Kayıt talebiniz yönetici onayından sonra aktif olacaktır.
+                </div>
+                
+                <div class="divider-text">Firma Bilgileri</div>
+                
+                <div class="form-group">
+                    <label for="firma-adi" class="required">Firma Adı</label>
+                    <input type="text" id="firma-adi" name="firmaAdi" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="firma-telefon" class="required">Telefon</label>
+                    <input type="tel" id="firma-telefon" name="firmaTelefon" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="firma-email" class="required">E-posta</label>
+                    <input type="email" id="firma-email" name="firmaEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="firma-adres">Adres</label>
+                    <textarea id="firma-adres" name="firmaAdres" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="vergi-no">Vergi No</label>
+                    <input type="text" id="vergi-no" name="vergiNo" class="form-control">
+                </div>
+                
+                <div class="divider-text">Yetkili Bilgileri</div>
+                
+                <div class="form-group">
+                    <label for="yetkili-ad" class="required">Ad Soyad</label>
+                    <input type="text" id="yetkili-ad" name="yetkiliAdSoyad" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="yetkili-telefon" class="required">Telefon</label>
+                    <input type="tel" id="yetkili-telefon" name="yetkiliTelefon" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="yetkili-email" class="required">E-posta</label>
+                    <input type="email" id="yetkili-email" name="yetkiliEmail" class="form-control" required>
+                    <span class="form-hint">Bu e-posta ile giriş yapacaksınız</span>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="kayit-btn">Kayıt Talebi Gönder</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+   <script>
+    // Sayfa yüklendiğinde giriş kontrolü
+    document.addEventListener('DOMContentLoaded', function() {
+        if (Auth.isLoggedIn()) {
+            redirectToDashboard();
+        }
+    });
+    
+    // Tab değiştir
+    function switchTab(tab) {
+        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.login-form').forEach(f => f.classList.remove('active'));
+        
+        if (tab === 'dukkan') {
+            document.querySelector('.login-tab:nth-child(1)').classList.add('active');
+            document.getElementById('dukkan-form').classList.add('active');
+        } else if (tab === 'admin') {
+            document.querySelector('.login-tab:nth-child(2)').classList.add('active');
+            document.getElementById('admin-form').classList.add('active');
+        } else if (tab === 'kayit') {
+            document.querySelector('.login-tab:nth-child(3)').classList.add('active');
+            document.getElementById('kayit-form').classList.add('active');
+        }
+    }
+    
+    // Dükkan girişi
+    async function handleDukkanLogin(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('dukkan-login-btn');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+        
+        try {
+            const firmaKodu = document.getElementById('firma-kodu').value.trim();
+            const email = document.getElementById('dukkan-email').value.trim();
+            const sifre = document.getElementById('dukkan-sifre').value;
+            
+            const result = await AuthAPI.login(firmaKodu, email, sifre);
+            
+            if (result && result.success) {
+                Auth.login(result.data);
+                showToast('Giriş başarılı!', 'success');
+                setTimeout(() => {
+                    window.location.href = ROUTES.DASHBOARD;
+                }, 500);
+            } else {
+                showToast(result?.errors?.[0] || result?.message || 'Giriş başarısız', 'error');
+            }
+        } catch (error) {
+            showToast('Bir hata oluştu', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+    
+    // Admin girişi
+    async function handleAdminLogin(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('admin-login-btn');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+        
+        try {
+            const email = document.getElementById('admin-email').value.trim();
+            const sifre = document.getElementById('admin-sifre').value;
+            
+            const result = await AuthAPI.adminLogin(email, sifre);
+            
+            if (result && result.success) {
+                Auth.login(result.data);
+                showToast('Giriş başarılı!', 'success');
+                setTimeout(() => {
+                    window.location.href = ROUTES.ADMIN_REQUESTS;
+                }, 500);
+            } else {
+                showToast(result?.errors?.[0] || result?.message || 'Giriş başarısız', 'error');
+            }
+        } catch (error) {
+            showToast('Bir hata oluştu', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+    
+    // Kayıt talebi - DÜZENLENMİŞ HALİ
+    async function handleKayitTalep(e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('kayit-btn');
+        if (!btn) return;
+        
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+
+        try {
+            const formData = getFormData('kayit-form');
+
+            // Controller doğrudan KayitTalepOlusturRequest beklediği için düz nesne gönderiyoruz
+           const payload = {
+            FirmaAdi: formData.firmaAdi,
+            FirmaTelefon: String(formData.firmaTelefon || ""),
+            FirmaEmail: formData.firmaEmail,
+            FirmaAdres: formData.firmaAdres || "",
+            VergiNo: String(formData.vergiNo || ""), // String olduğundan emin oluyoruz
+            YetkiliAdSoyad: formData.yetkiliAdSoyad,
+            YetkiliTelefon: String(formData.yetkiliTelefon || ""),
+            YetkiliEmail: formData.yetkiliEmail
+        };
+
+            const result = await AuthAPI.kayitTalep(payload);
+
+            if (result && result.success) {
+                showToast(result.message || 'Kayıt talebiniz alındı!', 'success');
+                resetForm('kayit-form');
+                switchTab('dukkan');
+            } else {
+                let errorMsg = result?.message || 'Kayıt başarısız';
+                if (result?.errors) {
+                    // FluentValidation hatalarının ilkini kullanıcıya göster
+                    const errorValues = Object.values(result.errors).flat();
+                    errorMsg = errorValues[0] || errorMsg;
+                }
+                showToast(errorMsg, 'error');
+            }
+        } catch (error) {
+            console.error("Kayıt Hatası:", error);
+            showToast('Bir ağ hatası oluştu, lütfen tekrar deneyin.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+
+    // Dashboard'a yönlendir
+    function redirectToDashboard() {
+        const user = Auth.getUser();
+        if (user && user.rol === 'SuperAdmin') {
+            window.location.href = ROUTES.ADMIN_REQUESTS;
+        } else {
+            window.location.href = ROUTES.DASHBOARD;
+        }
+    }
+</script>
+</body>
+</html>

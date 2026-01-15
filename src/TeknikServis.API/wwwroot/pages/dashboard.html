@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Teknik Servis</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">🔧</div>
+                    <h2>Teknik Servis</h2>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-name" id="user-name">-</div>
+                    <div class="sidebar-user-role" id="dukkan-name">-</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="active"><span class="sidebar-menu-icon">📊</span> Dashboard</a></li>
+                <li><a href="is-emirleri.html"><span class="sidebar-menu-icon">📋</span> İş Emirleri</a></li>
+                <li><a href="musteriler.html"><span class="sidebar-menu-icon">👥</span> Müşteriler</a></li>
+                <li><a href="cihazlar.html"><span class="sidebar-menu-icon">📱</span> Cihazlar</a></li>
+                <li><a href="#" onclick="logout(); return false;"><span class="sidebar-menu-icon">🚪</span> Çıkış</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <a href="is-emirleri.html?yeni=1" class="btn btn-primary">+ Yeni İş Emri</a>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats" id="stats-container">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <h3>Toplam İş Emri</h3>
+                        <div class="stat-card-icon">📋</div>
+                    </div>
+                    <div class="value" id="stat-toplam">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <h3>Devam Eden</h3>
+                        <div class="stat-card-icon">🔄</div>
+                    </div>
+                    <div class="value" id="stat-devam">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <h3>Tamamlanan</h3>
+                        <div class="stat-card-icon">✅</div>
+                    </div>
+                    <div class="value" id="stat-tamamlanan">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <h3>Müşteriler</h3>
+                        <div class="stat-card-icon">👥</div>
+                    </div>
+                    <div class="value" id="stat-musteri">-</div>
+                </div>
+            </div>
+            
+            <!-- Son İş Emirleri -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Son İş Emirleri</h2>
+                    <a href="is-emirleri.html" class="btn btn-secondary btn-sm">Tümünü Gör</a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table" id="son-is-emirleri-table">
+                        <thead>
+                            <tr>
+                                <th>İş Emri No</th>
+                                <th>Müşteri</th>
+                                <th>Cihaz</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="son-is-emirleri-body">
+                            <tr>
+                                <td colspan="6" class="text-center">Yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Mobile Cards -->
+                <div class="mobile-cards" id="son-is-emirleri-mobile"></div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+   // Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar toggle eventleri
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        });
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebar-overlay').classList.remove('active');
+        });
+    }
+    
+    // Auth kontrolü
+    if (!Auth.requireAuth()) return;
+    if (!Auth.isDukkanUser()) {
+        window.location.href = ROUTES.ADMIN_REQUESTS;
+        return;
+    }
+    
+    initPage();
+});
+    
+    // Sayfa başlat
+    async function initPage() {
+        displayUserInfo();
+        await loadStats();
+        await loadSonIsEmirleri();
+    }
+    
+    // Kullanıcı bilgilerini göster
+    function displayUserInfo() {
+        const user = Auth.getUser();
+        if (user) {
+            document.getElementById('user-name').textContent = user.adSoyad;
+            document.getElementById('dukkan-name').textContent = user.dukkanAdi || '-';
+        }
+    }
+    
+    // İstatistikleri yükle
+    async function loadStats() {
+        try {
+            const isEmirleriResult = await IsEmirleriAPI.getAll({ pageSize: 1000 });
+            const musterilerResult = await MusterilerAPI.getAll('', 1, 1);
+            
+            if (isEmirleriResult?.success) {
+                const isEmirleri = isEmirleriResult.data.items || [];
+                
+                document.getElementById('stat-toplam').textContent = isEmirleri.length;
+                
+                const tamamlanan = isEmirleri.filter(x => 
+                    x.durumAd === 'Tamamlandı' || x.durumAd === 'Teslim Edildi'
+                ).length;
+                
+                const devamEden = isEmirleri.length - tamamlanan;
+                
+                document.getElementById('stat-tamamlanan').textContent = tamamlanan;
+                document.getElementById('stat-devam').textContent = devamEden;
+            }
+            
+            if (musterilerResult?.success) {
+                document.getElementById('stat-musteri').textContent = musterilerResult.data.totalCount || 0;
+            }
+        } catch (error) {
+            console.error('Stats yüklenirken hata:', error);
+        }
+    }
+    
+    // Son iş emirlerini yükle
+    async function loadSonIsEmirleri() {
+        try {
+            const result = await IsEmirleriAPI.getAll({ page: 1, pageSize: 5 });
+            
+            const tbody = document.getElementById('son-is-emirleri-body');
+            const mobileContainer = document.getElementById('son-is-emirleri-mobile');
+            
+            if (!result?.success || !result.data.items?.length) {
+                tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📭</div><h3>Henüz iş emri yok</h3></div></td></tr>';
+                mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><h3>Henüz iş emri yok</h3></div>';
+                return;
+            }
+            
+            const isEmirleri = result.data.items;
+            
+            tbody.innerHTML = isEmirleri.map(item => `
+                <tr>
+                    <td><strong>${item.isEmriNo}</strong></td>
+                    <td>${item.musteriAd}</td>
+                    <td>${item.cihazBilgi}</td>
+                    <td>${getStatusBadge(item.durumAd, item.durumRenk)}</td>
+                    <td>${formatDate(item.olusturmaTarihi)}</td>
+                    <td class="actions">
+                        <a href="is-emri-detay.html?id=${item.id}" class="btn btn-sm btn-secondary">Detay</a>
+                    </td>
+                </tr>
+            `).join('');
+            
+            mobileContainer.innerHTML = isEmirleri.map(item => `
+                <div class="mobile-card">
+                    <div class="mobile-card-header">
+                        <span class="mobile-card-title">${item.isEmriNo}</span>
+                        ${getStatusBadge(item.durumAd, item.durumRenk)}
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Müşteri</span>
+                        <span class="mobile-card-value">${item.musteriAd}</span>
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Cihaz</span>
+                        <span class="mobile-card-value">${item.cihazBilgi}</span>
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Tarih</span>
+                        <span class="mobile-card-value">${formatDate(item.olusturmaTarihi)}</span>
+                    </div>
+                    <div class="mobile-card-actions">
+                        <a href="is-emri-detay.html?id=${item.id}" class="btn btn-secondary">Detay</a>
+                    </div>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error('İş emirleri yüklenirken hata:', error);
+        }
+    }
+</script>
+</body>
+</html>

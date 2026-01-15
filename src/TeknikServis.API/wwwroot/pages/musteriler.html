@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteriler - Teknik Servis</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">🔧</div>
+                    <h2>Teknik Servis</h2>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-name" id="user-name">-</div>
+                    <div class="sidebar-user-role" id="dukkan-name">-</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><span class="sidebar-menu-icon">📊</span> Dashboard</a></li>
+                <li><a href="is-emirleri.html"><span class="sidebar-menu-icon">📋</span> İş Emirleri</a></li>
+                <li><a href="musteriler.html" class="active"><span class="sidebar-menu-icon">👥</span> Müşteriler</a></li>
+                <li><a href="cihazlar.html"><span class="sidebar-menu-icon">📱</span> Cihazlar</a></li>
+                <li><a href="#" onclick="logout(); return false;"><span class="sidebar-menu-icon">🚪</span> Çıkış</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1>Müşteriler</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openModal('musteri-modal')">+ Yeni Müşteri</button>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="search-input" class="form-control" placeholder="Müşteri ara..." onkeyup="handleSearch(event)">
+                </div>
+            </div>
+            
+            <!-- Müşteri Listesi -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Ad Soyad / Firma</th>
+                                <th>Tip</th>
+                                <th>Telefon</th>
+                                <th>E-posta</th>
+                                <th>Kayıt Tarihi</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="musteriler-body">
+                            <tr>
+                                <td colspan="6" class="text-center">Yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Mobile Cards -->
+                <div class="mobile-cards" id="musteriler-mobile"></div>
+                
+                <!-- Pagination -->
+                <div id="pagination-container"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Müşteri Modal -->
+    <div class="modal" id="musteri-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Yeni Müşteri</h2>
+                <button class="modal-close" onclick="closeModal('musteri-modal')">&times;</button>
+            </div>
+            <form id="musteri-form" onsubmit="handleMusteriSubmit(event)">
+                <input type="hidden" id="musteri-id" name="id">
+                
+                <div class="form-group">
+                    <label>Müşteri Tipi</label>
+                    <select id="musteri-tipi" name="musteriTipi" class="form-control" onchange="handleTipChange()">
+                        <option value="0">Bireysel</option>
+                        <option value="1">Kurumsal</option>
+                    </select>
+                </div>
+                
+                <div id="bireysel-fields">
+                    <div class="form-group">
+                        <label for="ad-soyad" class="required">Ad Soyad</label>
+                        <input type="text" id="ad-soyad" name="adSoyad" class="form-control">
+                    </div>
+                </div>
+                
+                <div id="kurumsal-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="firma-adi" class="required">Firma Adı</label>
+                        <input type="text" id="firma-adi-input" name="firmaAdi" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="vergi-no">Vergi No</label>
+                        <input type="text" id="vergi-no-input" name="vergiNo" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="telefon" class="required">Telefon</label>
+                        <input type="tel" id="telefon" name="telefon" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefon2">Telefon 2</label>
+                        <input type="tel" id="telefon2" name="telefon2" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-posta</label>
+                    <input type="email" id="email" name="email" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="adres">Adres</label>
+                    <textarea id="adres" name="adres" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notlar">Notlar</label>
+                    <textarea id="notlar" name="notlar" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('musteri-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        let currentPage = 1;
+        let searchTerm = '';
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.requireAuth()) return;
+            
+            initPage();
+        });
+        
+        function initPage() {
+            displayUserInfo();
+            loadMusteriler();
+        }
+        
+        function displayUserInfo() {
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.adSoyad;
+                document.getElementById('dukkan-name').textContent = user.dukkanAdi || '-';
+            }
+        }
+        
+        // Müşterileri yükle
+        async function loadMusteriler(page = 1) {
+            currentPage = page;
+            
+            const tbody = document.getElementById('musteriler-body');
+            const mobileContainer = document.getElementById('musteriler-mobile');
+            
+            tbody.innerHTML = '<tr><td colspan="6"><div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div></td></tr>';
+            
+            try {
+                const result = await MusterilerAPI.getAll(searchTerm, page, 20);
+                
+                if (!result?.success) {
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="alert alert-danger">Veriler yüklenemedi</div></td></tr>';
+                    return;
+                }
+                
+                const musteriler = result.data.items || [];
+                
+                if (musteriler.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><h3>Müşteri bulunamadı</h3></div></td></tr>';
+                    mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><h3>Müşteri bulunamadı</h3></div>';
+                    document.getElementById('pagination-container').innerHTML = '';
+                    return;
+                }
+                
+                // Tablo
+                tbody.innerHTML = musteriler.map(m => `
+                    <tr>
+                        <td><strong>${m.adSoyad || m.firmaAdi || '-'}</strong></td>
+                        <td>${getCustomerTypeBadge(m.musteriTipi)}</td>
+                        <td>${formatPhone(m.telefon)}</td>
+                        <td>${m.email || '-'}</td>
+                        <td>${formatDate(m.olusturmaTarihi)}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="editMusteri('${m.id}')">Düzenle</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteMusteri('${m.id}')">Sil</button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Mobil kartlar
+                mobileContainer.innerHTML = musteriler.map(m => `
+                    <div class="mobile-card">
+                        <div class="mobile-card-header">
+                            <span class="mobile-card-title">${m.adSoyad || m.firmaAdi || '-'}</span>
+                            ${getCustomerTypeBadge(m.musteriTipi)}
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Telefon</span>
+                            <span class="mobile-card-value">${formatPhone(m.telefon)}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">E-posta</span>
+                            <span class="mobile-card-value">${m.email || '-'}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Kayıt Tarihi</span>
+                            <span class="mobile-card-value">${formatDate(m.olusturmaTarihi)}</span>
+                        </div>
+                        <div class="mobile-card-actions">
+                            <button class="btn btn-secondary" onclick="editMusteri('${m.id}')">Düzenle</button>
+                            <button class="btn btn-danger" onclick="deleteMusteri('${m.id}')">Sil</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Sayfalama
+                const totalPages = result.data.totalPages || 1;
+                document.getElementById('pagination-container').innerHTML = createPagination(currentPage, totalPages, 'loadMusteriler');
+                
+            } catch (error) {
+                console.error('Müşteriler yüklenirken hata:', error);
+                tbody.innerHTML = '<tr><td colspan="6"><div class="alert alert-danger">Bir hata oluştu</div></td></tr>';
+            }
+        }
+        
+        // Arama
+        const handleSearch = debounce(function(e) {
+            searchTerm = e.target.value;
+            loadMusteriler(1);
+        }, 300);
+        
+        // Müşteri tipi değişimi
+        function handleTipChange() {
+            const tip = document.getElementById('musteri-tipi').value;
+            
+            if (tip === '0') {
+                document.getElementById('bireysel-fields').style.display = 'block';
+                document.getElementById('kurumsal-fields').style.display = 'none';
+                document.getElementById('ad-soyad').required = true;
+                document.getElementById('firma-adi-input').required = false;
+            } else {
+                document.getElementById('bireysel-fields').style.display = 'none';
+                document.getElementById('kurumsal-fields').style.display = 'block';
+                document.getElementById('ad-soyad').required = false;
+                document.getElementById('firma-adi-input').required = true;
+            }
+        }
+        
+        // Yeni müşteri modalı aç
+        function openNewMusteriModal() {
+            document.getElementById('modal-title').textContent = 'Yeni Müşteri';
+            document.getElementById('musteri-id').value = '';
+            resetForm('musteri-form');
+            handleTipChange();
+            openModal('musteri-modal');
+        }
+        
+        // Müşteri düzenle
+        async function editMusteri(id) {
+            try {
+                const result = await MusterilerAPI.getById(id);
+                
+                if (!result?.success) {
+                    showToast('Müşteri bulunamadı', 'error');
+                    return;
+                }
+                
+                const m = result.data;
+                
+                document.getElementById('modal-title').textContent = 'Müşteri Düzenle';
+                document.getElementById('musteri-id').value = m.id;
+                document.getElementById('musteri-tipi').value = m.musteriTipi;
+                document.getElementById('ad-soyad').value = m.adSoyad || '';
+                document.getElementById('firma-adi-input').value = m.firmaAdi || '';
+                document.getElementById('vergi-no-input').value = m.vergiNo || '';
+                document.getElementById('telefon').value = m.telefon || '';
+                document.getElementById('telefon2').value = m.telefon2 || '';
+                document.getElementById('email').value = m.email || '';
+                document.getElementById('adres').value = m.adres || '';
+                document.getElementById('notlar').value = m.notlar || '';
+                
+                handleTipChange();
+                openModal('musteri-modal');
+                
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // Müşteri kaydet
+        async function handleMusteriSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const id = document.getElementById('musteri-id').value;
+                const data = {
+                    musteriTipi: parseInt(document.getElementById('musteri-tipi').value),
+                    adSoyad: document.getElementById('ad-soyad').value || null,
+                    firmaAdi: document.getElementById('firma-adi-input').value || null,
+                    vergiNo: document.getElementById('vergi-no-input').value || null,
+                    telefon: document.getElementById('telefon').value,
+                    telefon2: document.getElementById('telefon2').value || null,
+                    email: document.getElementById('email').value || null,
+                    adres: document.getElementById('adres').value || null,
+                    notlar: document.getElementById('notlar').value || null
+                };
+                
+                let result;
+                if (id) {
+                    data.id = id;
+                    result = await MusterilerAPI.update(data);
+                } else {
+                    result = await MusterilerAPI.create(data);
+                }
+                
+                if (result?.success) {
+                    showToast(id ? 'Müşteri güncellendi' : 'Müşteri oluşturuldu', 'success');
+                    closeModal('musteri-modal');
+                    loadMusteriler(currentPage);
+                } else {
+                    showToast(result?.errors?.[0] || result?.message || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Müşteri sil
+        async function deleteMusteri(id) {
+            if (!confirmAction('Bu müşteriyi silmek istediğinize emin misiniz?')) {
+                return;
+            }
+            
+            try {
+                const result = await MusterilerAPI.delete(id);
+                
+                if (result?.success) {
+                    showToast('Müşteri silindi', 'success');
+                    loadMusteriler(currentPage);
+                } else {
+                    showToast(result?.errors?.[0] || result?.message || 'Silme işlemi başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

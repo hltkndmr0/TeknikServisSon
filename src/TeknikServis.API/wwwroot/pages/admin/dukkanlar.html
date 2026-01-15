@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dükkanlar - Teknik Servis</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/responsive.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">⚙️</div>
+                    <h2>Yönetim Paneli</h2>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-name" id="user-name">-</div>
+                    <div class="sidebar-user-role">Sistem Yöneticisi</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="talepler.html"><span class="sidebar-menu-icon">📝</span> Kayıt Talepleri</a></li>
+                <li><a href="dukkanlar.html" class="active"><span class="sidebar-menu-icon">🏪</span> Dükkanlar</a></li>
+                <li><a href="#" onclick="logout(); return false;"><span class="sidebar-menu-icon">🚪</span> Çıkış</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1>Dükkanlar</h1>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="search-input" class="form-control" placeholder="Dükkan ara..." onkeyup="handleSearch(event)">
+                </div>
+                <select id="aktif-filter" class="form-control" onchange="loadDukkanlar()">
+                    <option value="">Tümü</option>
+                    <option value="true">Aktif</option>
+                    <option value="false">Pasif</option>
+                </select>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <h3>Toplam Dükkan</h3>
+                        <div class="stat-card-icon">🏪</div>
+                    </div>
+                    <div class="value" id="stat-toplam">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <h3>Aktif</h3>
+                        <div class="stat-card-icon">✅</div>
+                    </div>
+                    <div class="value" id="stat-aktif">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <h3>Pasif</h3>
+                        <div class="stat-card-icon">⏸️</div>
+                    </div>
+                    <div class="value" id="stat-pasif">-</div>
+                </div>
+            </div>
+            
+            <!-- Dükkanlar Listesi -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Firma Kodu</th>
+                                <th>Firma Adı</th>
+                                <th>Yetkili</th>
+                                <th>Telefon</th>
+                                <th>E-posta</th>
+                                <th>Durum</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="dukkanlar-body">
+                            <tr>
+                                <td colspan="7" class="text-center">Yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Mobile Cards -->
+                <div class="mobile-cards" id="dukkanlar-mobile"></div>
+                
+                <!-- Pagination -->
+                <div id="pagination-container"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Dükkan Detay/Düzenle Modal -->
+    <div class="modal modal-lg" id="dukkan-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Dükkan Detayı</h2>
+                <button class="modal-close" onclick="closeModal('dukkan-modal')">&times;</button>
+            </div>
+            <form id="dukkan-form" onsubmit="handleDukkanSubmit(event)">
+                <input type="hidden" id="dukkan-id" name="id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firma-kodu">Firma Kodu</label>
+                        <input type="text" id="firma-kodu" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="dukkan-aktif">Durum</label>
+                        <select id="dukkan-aktif" name="aktif" class="form-control">
+                            <option value="true">Aktif</option>
+                            <option value="false">Pasif</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="firma-adi" class="required">Firma Adı</label>
+                    <input type="text" id="firma-adi" name="ad" class="form-control" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firma-telefon" class="required">Telefon</label>
+                        <input type="tel" id="firma-telefon" name="telefon" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="firma-email" class="required">E-posta</label>
+                        <input type="email" id="firma-email" name="email" class="form-control" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="firma-adres">Adres</label>
+                    <textarea id="firma-adres" name="adres" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vergi-no">Vergi No</label>
+                    <input type="text" id="vergi-no" name="vergiNo" class="form-control">
+                </div>
+                
+                <div class="divider"></div>
+                
+                <h3 style="font-size: 14px; margin-bottom: 16px; color: var(--text-muted);">İstatistikler</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Kayıt Tarihi</label>
+                        <input type="text" id="kayit-tarihi" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Kullanıcı Sayısı</label>
+                        <input type="text" id="kullanici-sayisi" class="form-control" readonly>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('dukkan-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="../../js/config.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/utils.js"></script>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/app.js"></script>
+    <script>
+        let currentPage = 1;
+        let searchTerm = '';
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.requireSuperAdmin()) return;
+            initPage();
+        });
+        
+        function initPage() {
+            displayUserInfo();
+            loadDukkanlar();
+            loadStats();
+        }
+        
+        function displayUserInfo() {
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.adSoyad;
+            }
+        }
+        
+        // İstatistikleri yükle
+        async function loadStats() {
+            try {
+                const allResult = await DukkanlarAPI.getAll('', null, 1, 1);
+                const aktifResult = await DukkanlarAPI.getAll('', true, 1, 1);
+                const pasifResult = await DukkanlarAPI.getAll('', false, 1, 1);
+                
+                if (allResult?.success) {
+                    document.getElementById('stat-toplam').textContent = allResult.data.totalCount || 0;
+                }
+                if (aktifResult?.success) {
+                    document.getElementById('stat-aktif').textContent = aktifResult.data.totalCount || 0;
+                }
+                if (pasifResult?.success) {
+                    document.getElementById('stat-pasif').textContent = pasifResult.data.totalCount || 0;
+                }
+            } catch (error) {
+                console.error('Stats yüklenirken hata:', error);
+            }
+        }
+        
+        // Dükkanları yükle
+        async function loadDukkanlar(page = 1) {
+            currentPage = page;
+            
+            const tbody = document.getElementById('dukkanlar-body');
+            const mobileContainer = document.getElementById('dukkanlar-mobile');
+            
+            tbody.innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div></td></tr>';
+            
+            try {
+                const aktifFilter = document.getElementById('aktif-filter').value;
+                const aktif = aktifFilter === '' ? null : aktifFilter === 'true';
+                
+                const result = await DukkanlarAPI.getAll(searchTerm, aktif, page, 20);
+                
+                if (!result?.success) {
+                    tbody.innerHTML = '<tr><td colspan="7"><div class="alert alert-danger">Veriler yüklenemedi</div></td></tr>';
+                    return;
+                }
+                
+                const dukkanlar = result.data.items || [];
+                
+                if (dukkanlar.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🏪</div><h3>Dükkan bulunamadı</h3></div></td></tr>';
+                    mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div><h3>Dükkan bulunamadı</h3></div>';
+                    document.getElementById('pagination-container').innerHTML = '';
+                    return;
+                }
+                
+                // Tablo
+                tbody.innerHTML = dukkanlar.map(d => `
+                    <tr>
+                        <td><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">${d.firmaKodu}</code></td>
+                        <td><strong>${d.ad}</strong></td>
+                        <td>${d.yetkiliAd || '-'}</td>
+                        <td>${formatPhone(d.telefon)}</td>
+                        <td>${d.email}</td>
+                        <td>${d.aktif ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-danger">Pasif</span>'}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="editDukkan('${d.id}')">Düzenle</button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Mobil kartlar
+                mobileContainer.innerHTML = dukkanlar.map(d => `
+                    <div class="mobile-card">
+                        <div class="mobile-card-header">
+                            <span class="mobile-card-title">${d.ad}</span>
+                            ${d.aktif ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-danger">Pasif</span>'}
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Firma Kodu</span>
+                            <span class="mobile-card-value"><code>${d.firmaKodu}</code></span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Telefon</span>
+                            <span class="mobile-card-value">${formatPhone(d.telefon)}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">E-posta</span>
+                            <span class="mobile-card-value">${d.email}</span>
+                        </div>
+                        <div class="mobile-card-actions">
+                            <button class="btn btn-secondary" onclick="editDukkan('${d.id}')">Düzenle</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Sayfalama
+                const totalPages = result.data.totalPages || 1;
+                document.getElementById('pagination-container').innerHTML = createPagination(currentPage, totalPages, 'loadDukkanlar');
+                
+            } catch (error) {
+                console.error('Dükkanlar yüklenirken hata:', error);
+                tbody.innerHTML = '<tr><td colspan="7"><div class="alert alert-danger">Bir hata oluştu</div></td></tr>';
+            }
+        }
+        
+        // Arama
+        const handleSearch = debounce(function(e) {
+            searchTerm = e.target.value;
+            loadDukkanlar(1);
+        }, 300);
+        
+        // Dükkan düzenle
+        async function editDukkan(id) {
+            try {
+                const result = await DukkanlarAPI.getById(id);
+                
+                if (!result?.success) {
+                    showToast('Dükkan bulunamadı', 'error');
+                    return;
+                }
+                
+                const d = result.data;
+                
+                document.getElementById('modal-title').textContent = 'Dükkan Düzenle';
+                document.getElementById('dukkan-id').value = d.id;
+                document.getElementById('firma-kodu').value = d.firmaKodu || '';
+                document.getElementById('firma-adi').value = d.ad || '';
+                document.getElementById('firma-telefon').value = d.telefon || '';
+                document.getElementById('firma-email').value = d.email || '';
+                document.getElementById('firma-adres').value = d.adres || '';
+                document.getElementById('vergi-no').value = d.vergiNo || '';
+                document.getElementById('dukkan-aktif').value = d.aktif ? 'true' : 'false';
+                document.getElementById('kayit-tarihi').value = formatDateTime(d.olusturmaTarihi);
+                document.getElementById('kullanici-sayisi').value = d.kullaniciSayisi || 0;
+                
+                openModal('dukkan-modal');
+                
+            } catch (error) {
+                console.error('Dükkan yüklenirken hata:', error);
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // Dükkan kaydet
+        async function handleDukkanSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const data = {
+                    id: document.getElementById('dukkan-id').value,
+                    ad: document.getElementById('firma-adi').value,
+                    telefon: document.getElementById('firma-telefon').value,
+                    email: document.getElementById('firma-email').value,
+                    adres: document.getElementById('firma-adres').value || null,
+                    vergiNo: document.getElementById('vergi-no').value || null,
+                    aktif: document.getElementById('dukkan-aktif').value === 'true'
+                };
+                
+                const result = await DukkanlarAPI.update(data);
+                
+                if (result?.success) {
+                    showToast('Dükkan güncellendi', 'success');
+                    closeModal('dukkan-modal');
+                    loadDukkanlar(currentPage);
+                    loadStats();
+                } else {
+                    showToast(result?.errors?.[0] || result?.message || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+    </script>
+</body>
+</html>

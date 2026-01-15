@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İş Emri Detay - Teknik Servis</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">🔧</div>
+                    <h2>Teknik Servis</h2>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-name" id="user-name">-</div>
+                    <div class="sidebar-user-role" id="dukkan-name">-</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><span class="sidebar-menu-icon">📊</span> Dashboard</a></li>
+                <li><a href="is-emirleri.html" class="active"><span class="sidebar-menu-icon">📋</span> İş Emirleri</a></li>
+                <li><a href="musteriler.html"><span class="sidebar-menu-icon">👥</span> Müşteriler</a></li>
+                <li><a href="cihazlar.html"><span class="sidebar-menu-icon">📱</span> Cihazlar</a></li>
+                <li><a href="#" onclick="logout(); return false;"><span class="sidebar-menu-icon">🚪</span> Çıkış</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <div>
+                    <a href="is-emirleri.html" class="btn btn-ghost btn-sm" style="margin-bottom: 10px;">← Geri</a>
+                    <h1 id="page-title">İş Emri Detay</h1>
+                </div>
+                <div class="header-actions" id="header-actions"></div>
+            </div>
+            
+            <!-- Loading -->
+            <div id="loading-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Yükleniyor...</p>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div id="content-container" style="display: none;">
+                <!-- Durum ve Öncelik -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <span id="durum-badge"></span>
+                            <span id="oncelik-badge" style="margin-left: 8px;"></span>
+                            <span id="garanti-badge" style="margin-left: 8px;"></span>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" onclick="openModal('durum-modal')">Durum Değiştir</button>
+                            <button class="btn btn-secondary btn-sm" onclick="openModal('not-modal')">Not Ekle</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detay Grid -->
+                <div class="detail-grid">
+                    <!-- Sol Kolon -->
+                    <div>
+                        <!-- Müşteri Bilgileri -->
+                        <div class="detail-section">
+                            <h3>👤 Müşteri Bilgileri</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Ad Soyad</span>
+                                <span class="detail-value" id="musteri-ad">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Telefon</span>
+                                <span class="detail-value" id="musteri-telefon">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">E-posta</span>
+                                <span class="detail-value" id="musteri-email">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Cihaz Bilgileri -->
+                        <div class="detail-section">
+                            <h3>📱 Cihaz Bilgileri</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Cihaz</span>
+                                <span class="detail-value" id="cihaz-bilgi">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Seri No</span>
+                                <span class="detail-value" id="cihaz-seri">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">IMEI</span>
+                                <span class="detail-value" id="cihaz-imei">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Arıza Bilgileri -->
+                        <div class="detail-section">
+                            <h3>🔧 Arıza Bilgileri</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Arıza Açıklaması</span>
+                                <span class="detail-value" id="ariza-aciklama">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Ön Teşhis</span>
+                                <span class="detail-value" id="on-teshis">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Yapılan İşlemler</span>
+                                <span class="detail-value" id="yapilan-islemler">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sağ Kolon -->
+                    <div>
+                        <!-- Ücret Bilgileri -->
+                        <div class="detail-section">
+                            <h3>💰 Ücret Bilgileri</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Tahmini Ücret</span>
+                                <span class="detail-value" id="tahmini-ucret">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Toplam Ücret</span>
+                                <span class="detail-value" id="toplam-ucret">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Tahmini Süre</span>
+                                <span class="detail-value" id="tahmini-sure">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Tarih Bilgileri -->
+                        <div class="detail-section">
+                            <h3>📅 Tarih Bilgileri</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Oluşturma</span>
+                                <span class="detail-value" id="olusturma-tarihi">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Tamamlanma</span>
+                                <span class="detail-value" id="tamamlanma-tarihi">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Teslim</span>
+                                <span class="detail-value" id="teslim-tarihi">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Durum Geçmişi -->
+                        <div class="detail-section">
+                            <h3>📜 Durum Geçmişi</h3>
+                            <div class="timeline" id="durum-gecmisi">
+                                <p style="color: var(--text-muted);">Geçmiş yükleniyor...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notlar -->
+                <div class="card mt-20">
+                    <div class="card-header">
+                        <h2 class="card-title">📝 Notlar</h2>
+                        <button class="btn btn-secondary btn-sm" onclick="openModal('not-modal')">+ Not Ekle</button>
+                    </div>
+                    <div id="notlar-container">
+                        <div class="empty-state">
+                            <p>Henüz not eklenmemiş</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Teklif & Fatura -->
+                <div class="card mt-20">
+                    <div class="card-header">
+                        <h2 class="card-title">📄 Teklif & Fatura</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" onclick="openModal('teklif-modal')" id="teklif-btn">+ Teklif Oluştur</button>
+                            <button class="btn btn-secondary btn-sm" onclick="createFatura()" id="fatura-btn" style="display: none;">+ Fatura Oluştur</button>
+                        </div>
+                    </div>
+                    <div id="teklif-fatura-container">
+                        <div class="empty-state">
+                            <p>Henüz teklif veya fatura oluşturulmamış</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Durum Değiştir Modal -->
+    <div class="modal" id="durum-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Durum Değiştir</h2>
+                <button class="modal-close" onclick="closeModal('durum-modal')">&times;</button>
+            </div>
+            <form id="durum-form" onsubmit="handleDurumSubmit(event)">
+                <div class="form-group">
+                    <label for="yeni-durum" class="required">Yeni Durum</label>
+                    <select id="yeni-durum" name="durumId" class="form-control" required>
+                        <option value="">Seçiniz...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="durum-aciklama">Açıklama</label>
+                    <textarea id="durum-aciklama" name="aciklama" class="form-control" rows="3" placeholder="Durum değişikliği hakkında not..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('durum-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="durum-submit-btn">Değiştir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Not Ekle Modal -->
+    <div class="modal" id="not-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Not Ekle</h2>
+                <button class="modal-close" onclick="closeModal('not-modal')">&times;</button>
+            </div>
+            <form id="not-form" onsubmit="handleNotSubmit(event)">
+                <div class="form-group">
+                    <label for="not-metni" class="required">Not</label>
+                    <textarea id="not-metni" name="notMetni" class="form-control" rows="4" placeholder="Not yazın..." required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('not-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="not-submit-btn">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Teklif Modal -->
+    <div class="modal modal-lg" id="teklif-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Teklif Oluştur</h2>
+                <button class="modal-close" onclick="closeModal('teklif-modal')">&times;</button>
+            </div>
+            <form id="teklif-form" onsubmit="handleTeklifSubmit(event)">
+                <div class="form-group">
+                    <label for="teklif-aciklama">Açıklama</label>
+                    <textarea id="teklif-aciklama" name="aciklama" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="divider-text">Kalemler</div>
+                
+                <div id="teklif-kalemleri">
+                    <!-- Kalemler buraya eklenecek -->
+                </div>
+                
+                <button type="button" class="btn btn-secondary btn-sm mt-10" onclick="addTeklifKalem()">+ Kalem Ekle</button>
+                
+                <div class="form-row mt-20">
+                    <div class="form-group">
+                        <label>Ara Toplam</label>
+                        <input type="text" id="teklif-ara-toplam" class="form-control" readonly value="₺0,00">
+                    </div>
+                    <div class="form-group">
+                        <label for="teklif-kdv">KDV (%)</label>
+                        <input type="number" id="teklif-kdv" name="kdvOrani" class="form-control" value="20" min="0" max="100" onchange="calculateTeklifToplam()">
+                    </div>
+                    <div class="form-group">
+                        <label>Genel Toplam</label>
+                        <input type="text" id="teklif-toplam" class="form-control" readonly value="₺0,00">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="teklif-gecerlilik">Geçerlilik Süresi (Gün)</label>
+                    <input type="number" id="teklif-gecerlilik" name="gecerlilikSuresiGun" class="form-control" value="7" min="1">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('teklif-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="teklif-submit-btn">Teklif Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <style>
+        .teklif-kalem {
+            display: grid;
+            grid-template-columns: 100px 1fr 80px 100px 100px 40px;
+            gap: 10px;
+            align-items: end;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+        }
+        
+        .teklif-kalem .form-group {
+            margin-bottom: 0;
+        }
+        
+        .teklif-kalem label {
+            font-size: 11px;
+        }
+        
+        .kalem-sil {
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .teklif-kalem {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .teklif-kalem .form-group:nth-child(2) {
+                grid-column: 1 / -1;
+            }
+        }
+    </style>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        let isEmriId = null;
+        let isEmri = null;
+        let durumlar = [];
+        let teklifKalemSayisi = 0;
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.requireAuth()) return;
+            
+            isEmriId = getUrlParam('id');
+            if (!isEmriId) {
+                window.location.href = 'is-emirleri.html';
+                return;
+            }
+            
+            initPage();
+        });
+        
+        async function initPage() {
+            displayUserInfo();
+            await loadDurumlar();
+            await loadIsEmri();
+        }
+        
+        function displayUserInfo() {
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.adSoyad;
+                document.getElementById('dukkan-name').textContent = user.dukkanAdi || '-';
+            }
+        }
+        
+        // Durumları yükle
+        async function loadDurumlar() {
+            try {
+                const result = await IsEmirleriAPI.getDurumlar();
+                if (result?.success) {
+                    durumlar = result.data || [];
+                    const select = document.getElementById('yeni-durum');
+                    select.innerHTML = '<option value="">Seçiniz...</option>' + 
+                        durumlar.map(d => `<option value="${d.id}">${d.ad}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Durumlar yüklenirken hata:', error);
+            }
+        }
+        
+        // İş emri detayını yükle
+        async function loadIsEmri() {
+            try {
+                const result = await IsEmirleriAPI.getById(isEmriId);
+                
+                document.getElementById('loading-container').style.display = 'none';
+                
+                if (!result?.success) {
+                    showToast('İş emri bulunamadı', 'error');
+                    window.location.href = 'is-emirleri.html';
+                    return;
+                }
+                
+                isEmri = result.data;
+                document.getElementById('content-container').style.display = 'block';
+                renderIsEmri();
+                await loadTeklifFatura();
+                
+            } catch (error) {
+                console.error('İş emri yüklenirken hata:', error);
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // İş emri bilgilerini göster
+        function renderIsEmri() {
+            const e = isEmri;
+            
+            // Başlık
+            document.getElementById('page-title').textContent = e.isEmriNo;
+            document.title = e.isEmriNo + ' - Teknik Servis';
+            
+            // Durum ve Öncelik
+            document.getElementById('durum-badge').innerHTML = getStatusBadge(e.durumAd, e.durumRenk);
+            document.getElementById('oncelik-badge').innerHTML = getPriorityBadge(e.oncelik);
+            document.getElementById('garanti-badge').innerHTML = e.garantiKapsaminda 
+                ? '<span class="badge badge-info">Garantili</span>' 
+                : '';
+            
+            // Müşteri
+            document.getElementById('musteri-ad').textContent = e.musteriAd || '-';
+            document.getElementById('musteri-telefon').textContent = formatPhone(e.musteriTelefon) || '-';
+            document.getElementById('musteri-email').textContent = e.musteriEmail || '-';
+            
+            // Cihaz
+            document.getElementById('cihaz-bilgi').textContent = e.cihazBilgi || '-';
+            document.getElementById('cihaz-seri').textContent = e.seriNo || '-';
+            document.getElementById('cihaz-imei').textContent = e.imei || '-';
+            
+            // Arıza
+            document.getElementById('ariza-aciklama').textContent = e.arizaAciklamasi || '-';
+            document.getElementById('on-teshis').textContent = e.onTeshis || '-';
+            document.getElementById('yapilan-islemler').textContent = e.yapilanIslemler || '-';
+            
+            // Ücret
+            document.getElementById('tahmini-ucret').textContent = formatMoney(e.tahminiUcret);
+            document.getElementById('toplam-ucret').textContent = formatMoney(e.toplamUcret);
+            document.getElementById('tahmini-sure').textContent = e.tahminiSureGun ? e.tahminiSureGun + ' gün' : '-';
+            
+            // Tarihler
+            document.getElementById('olusturma-tarihi').textContent = formatDateTime(e.olusturmaTarihi);
+            document.getElementById('tamamlanma-tarihi').textContent = formatDateTime(e.tamamlanmaTarihi);
+            document.getElementById('teslim-tarihi').textContent = formatDateTime(e.teslimTarihi);
+            
+            // Durum geçmişi
+            renderDurumGecmisi(e.durumGecmisi || []);
+            
+            // Notlar
+            renderNotlar(e.notlar || []);
+            
+            // Header actions - Tamamlandı ise kargo etiketi göster
+            const headerActions = document.getElementById('header-actions');
+            if (e.durumAd === 'Tamamlandı' || e.durumAd === 'Teslim Edildi') {
+                headerActions.innerHTML = `<button class="btn btn-primary" onclick="printKargoEtiketi()">🏷️ Kargo Etiketi Yazdır</button>`;
+            }
+        }
+        
+        // Durum geçmişi
+        function renderDurumGecmisi(gecmis) {
+            const container = document.getElementById('durum-gecmisi');
+            
+            if (!gecmis.length) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Henüz geçmiş yok</p>';
+                return;
+            }
+            
+            container.innerHTML = gecmis.map(g => `
+                <div class="timeline-item">
+                    <div class="timeline-date">${formatDateTime(g.degisiklikTarihi)}</div>
+                    <div class="timeline-content">
+                        <strong>${g.durumAd}</strong>
+                        ${g.aciklama ? '<br><small>' + g.aciklama + '</small>' : ''}
+                        <br><small style="color: var(--text-muted);">${g.kullaniciAd}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Notlar
+        function renderNotlar(notlar) {
+            const container = document.getElementById('notlar-container');
+            
+            if (!notlar.length) {
+                container.innerHTML = '<div class="empty-state"><p>Henüz not eklenmemiş</p></div>';
+                return;
+            }
+            
+            container.innerHTML = notlar.map(n => `
+                <div class="note-item">
+                    <div class="note-header">
+                        <span>${n.kullaniciAd}</span>
+                        <span>${formatDateTime(n.olusturmaTarihi)}</span>
+                    </div>
+                    <div class="note-content">${n.notMetni}</div>
+                </div>
+            `).join('');
+        }
+        
+       // PDF indir (Token ile)
+async function downloadPdf(url, filename) {
+    try {
+        const token = Auth.getToken();
+        console.log('PDF URL:', url);
+        console.log('Token:', token ? 'VAR' : 'YOK');
+        
+        showToast('PDF hazırlanıyor...', 'warning');
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('PDF Hatası:', errorText);
+            showToast('PDF indirilemedi: ' + response.status, 'error');
+            return;
+        }
+        
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+        
+        showToast('PDF indirildi', 'success');
+        
+    } catch (error) {
+        console.error('PDF indirme hatası:', error);
+        showToast('PDF indirilemedi', 'error');
+    }
+}
+
+        // Teklif PDF indir
+        function downloadTeklifPdf(teklifId, teklifNo) {
+            const url = `${CONFIG.API_URL}/teklifler/${teklifId}/pdf`;
+            downloadPdf(url, teklifNo + '.pdf');
+        }
+
+        // Fatura PDF indir
+        function downloadFaturaPdf(faturaId, faturaNo) {
+            const url = `${CONFIG.API_URL}/faturalar/${faturaId}/pdf`;
+            downloadPdf(url, faturaNo + '.pdf');
+        }
+        
+        // Teklif ve Fatura
+        async function loadTeklifFatura() {
+            const container = document.getElementById('teklif-fatura-container');
+            
+            try {
+                const teklifResult = await TekliflerAPI.getByIsEmri(isEmriId);
+                const faturaResult = await FaturalarAPI.getByIsEmri(isEmriId);
+                
+                let html = '';
+                
+                // Teklifler
+                if (teklifResult?.success && teklifResult.data?.length) {
+                    teklifResult.data.forEach(t => {
+                        html += `
+                            <div class="note-item">
+                                <div class="note-header">
+                                    <span><strong>${t.teklifNo}</strong> - ${getOfferStatusBadge(t.durum)}</span>
+                                    <span>${formatDateTime(t.olusturmaTarihi)}</span>
+                                </div>
+                                <div class="note-content">
+                                    <p>Toplam: <strong>${formatMoney(t.toplamTutar)}</strong></p>
+                                    <div class="btn-group mt-10">
+                                        <button class="btn btn-sm btn-secondary" onclick="downloadTeklifPdf('${t.id}', '${t.teklifNo}')">PDF İndir</button>
+                                        ${t.durum === 0 ? `
+                                            <button class="btn btn-sm btn-success" onclick="onaylaTeklif('${t.id}')">Onayla</button>
+                                            <button class="btn btn-sm btn-danger" onclick="reddetTeklif('${t.id}')">Reddet</button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    // Onaylı teklif varsa fatura butonu göster
+                    // ... loadTeklifFatura içindeki döngüde onaylı teklifi bulduğumuz kısım:
+                    const onayliTeklif = teklifResult.data.find(t => t.durum === 1);
+                    if (onayliTeklif) {
+                    const faturaBtn = document.getElementById('fatura-btn');
+                    faturaBtn.style.display = 'inline-flex';
+                    // Onaylı teklifin ID'sini ve verilerini fonksiyona geçiyoruz
+                    faturaBtn.onclick = () => createFatura(onayliTeklif); 
+                    document.getElementById('teklif-btn').style.display = 'none';
+                    }               
+                }
+                
+                // Faturalar
+                if (faturaResult?.success && faturaResult.data?.length) {
+                    faturaResult.data.forEach(f => {
+                        html += `
+                            <div class="note-item">
+                                <div class="note-header">
+                                    <span><strong>${f.faturaNo}</strong> - <span class="badge badge-success">Fatura</span></span>
+                                    <span>${formatDateTime(f.olusturmaTarihi)}</span>
+                                </div>
+                                <div class="note-content">
+                                    <p>Toplam: <strong>${formatMoney(f.toplamTutar)}</strong></p>
+                                    <button class="btn btn-sm btn-secondary mt-10" onclick="downloadFaturaPdf('${f.id}', '${f.faturaNo}')">PDF İndir</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    // Fatura varsa butonları gizle
+                    document.getElementById('fatura-btn').style.display = 'none';
+                    document.getElementById('teklif-btn').style.display = 'none';
+                }
+                
+                container.innerHTML = html || '<div class="empty-state"><p>Henüz teklif veya fatura oluşturulmamış</p></div>';
+                
+            } catch (error) {
+                console.error('Teklif/Fatura yüklenirken hata:', error);
+            }
+        }
+        
+        // Durum değiştir
+        async function handleDurumSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('durum-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const durumId = document.getElementById('yeni-durum').value;
+                const aciklama = document.getElementById('durum-aciklama').value;
+                
+                const result = await IsEmirleriAPI.updateDurum(isEmriId, durumId, aciklama);
+                
+                if (result?.success) {
+                    showToast('Durum güncellendi', 'success');
+                    closeModal('durum-modal');
+                    loadIsEmri();
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Not ekle
+        async function handleNotSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('not-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const notMetni = document.getElementById('not-metni').value;
+                
+                const result = await IsEmirleriAPI.addNot(isEmriId, notMetni);
+                
+                if (result?.success) {
+                    showToast('Not eklendi', 'success');
+                    closeModal('not-modal');
+                    document.getElementById('not-metni').value = '';
+                    loadIsEmri();
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Teklif kalem ekle
+        function addTeklifKalem() {
+            teklifKalemSayisi++;
+            const container = document.getElementById('teklif-kalemleri');
+            
+            const kalemHtml = `
+                <div class="teklif-kalem" id="kalem-${teklifKalemSayisi}">
+                    <div class="form-group">
+                        <label>Tip</label>
+                        <select name="kalemTip${teklifKalemSayisi}" class="form-control">
+                            <option value="0">İşçilik</option>
+                            <option value="1">Parça</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" name="kalemAciklama${teklifKalemSayisi}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Miktar</label>
+                        <input type="number" name="kalemMiktar${teklifKalemSayisi}" class="form-control" value="1" min="1" onchange="calculateTeklifToplam()">
+                    </div>
+                    <div class="form-group">
+                        <label>Birim Fiyat</label>
+                        <input type="number" name="kalemFiyat${teklifKalemSayisi}" class="form-control" step="0.01" min="0" onchange="calculateTeklifToplam()">
+                    </div>
+                    <div class="form-group">
+                        <label>Toplam</label>
+                        <input type="text" id="kalemToplam${teklifKalemSayisi}" class="form-control" readonly value="₺0,00">
+                    </div>
+                    <button type="button" class="kalem-sil" onclick="removeTeklifKalem(${teklifKalemSayisi})">✕</button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', kalemHtml);
+        }
+        
+        // Teklif kalem sil
+        function removeTeklifKalem(index) {
+            const kalem = document.getElementById('kalem-' + index);
+            if (kalem) {
+                kalem.remove();
+                calculateTeklifToplam();
+            }
+        }
+        
+        // Teklif toplamı hesapla
+        function calculateTeklifToplam() {
+            let araToplam = 0;
+            
+            document.querySelectorAll('.teklif-kalem').forEach((kalem, index) => {
+                const miktar = parseFloat(kalem.querySelector('input[name^="kalemMiktar"]')?.value) || 0;
+                const fiyat = parseFloat(kalem.querySelector('input[name^="kalemFiyat"]')?.value) || 0;
+                const toplam = miktar * fiyat;
+                
+                const toplamInput = kalem.querySelector('input[id^="kalemToplam"]');
+                if (toplamInput) {
+                    toplamInput.value = formatMoney(toplam);
+                }
+                
+                araToplam += toplam;
+            });
+            
+            const kdvOrani = parseFloat(document.getElementById('teklif-kdv').value) || 0;
+            const kdvTutari = araToplam * (kdvOrani / 100);
+            const genelToplam = araToplam + kdvTutari;
+            
+            document.getElementById('teklif-ara-toplam').value = formatMoney(araToplam);
+            document.getElementById('teklif-toplam').value = formatMoney(genelToplam);
+        }
+        
+        // Teklif oluştur
+        async function handleTeklifSubmit(e) {
+            e.preventDefault();
+            
+            const kalemler = [];
+            document.querySelectorAll('.teklif-kalem').forEach(kalem => {
+                kalemler.push({
+                    kalemTipiNumeric: parseInt(kalem.querySelector('select[name^="kalemTip"]').value),
+                    aciklama: kalem.querySelector('input[name^="kalemAciklama"]').value,
+                    miktar: parseInt(kalem.querySelector('input[name^="kalemMiktar"]').value),
+                    birimFiyat: parseFloat(kalem.querySelector('input[name^="kalemFiyat"]').value)
+                });
+            });
+            
+            if (kalemler.length === 0) {
+                showToast('En az bir kalem ekleyin', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('teklif-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const data = {
+                    isEmriId: isEmriId,
+                    aciklama: document.getElementById('teklif-aciklama').value || null,
+                    kdvOrani: parseInt(document.getElementById('teklif-kdv').value),
+                    gecerlilikSuresiGun: parseInt(document.getElementById('teklif-gecerlilik').value),
+                    kalemler: kalemler
+                };
+                
+                const result = await TekliflerAPI.create(data);
+                
+                if (result?.success) {
+                    showToast('Teklif oluşturuldu: ' + result.data.teklifNo, 'success');
+                    closeModal('teklif-modal');
+                    document.getElementById('teklif-kalemleri').innerHTML = '';
+                    teklifKalemSayisi = 0;
+                    loadTeklifFatura();
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Teklif onayla
+        async function onaylaTeklif(teklifId) {
+            if (!confirmAction('Bu teklifi onaylamak istediğinize emin misiniz?')) return;
+            
+            try {
+                const result = await TekliflerAPI.onayla(teklifId);
+                
+                if (result?.success) {
+                    showToast('Teklif onaylandı', 'success');
+                    loadTeklifFatura();
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // Teklif reddet
+        async function reddetTeklif(teklifId) {
+            if (!confirmAction('Bu teklifi reddetmek istediğinize emin misiniz?')) return;
+            
+            try {
+                const result = await TekliflerAPI.reddet(teklifId);
+                
+                if (result?.success) {
+                    showToast('Teklif reddedildi', 'success');
+                    loadTeklifFatura();
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // Fatura oluştur
+        async function createFatura(onayliTeklif) {
+        if (!onayliTeklif) {
+            showToast('Onaylı bir teklif bulunamadı!', 'error');
+            return;
+        }
+
+        if (!confirmAction('Onaylı teklif üzerinden fatura oluşturulacaktır. Emin misiniz?')) return;
+        
+    try {
+        // Backend'in beklediği Kalemler dizisini tekliften map'liyoruz
+        const faturaKalemleri = onayliTeklif.kalemler.map(k => ({
+            kalemTipi: k.kalemTipi, // Backend'de Enum ise numeric değer gider
+            aciklama: k.aciklama,
+            miktar: k.miktar,
+            birimFiyat: k.birimFiyat
+        }));
+
+        const data = {
+            isEmriId: isEmriId,
+            teklifId: onayliTeklif.id, // Hangi tekliften dönüştüğünü takip etmek için
+            kdvOrani: onayliTeklif.kdvOrani || 20,
+            aciklama: onayliTeklif.aciklama || "Tekliften faturaya dönüştürüldü.",
+            kalemler: faturaKalemleri // Hata aldığın o meşhur zorunlu alan
+        };
+        
+        const result = await FaturalarAPI.create(data);
+        
+        if (result?.success) {
+            showToast('Fatura başarıyla oluşturuldu: ' + result.data.faturaNo, 'success');
+            loadTeklifFatura(); // Listeyi yenile
+        } else {
+            // Backend'den gelen spesifik hataları göster (Validation errors)
+            const errorMsg = result?.errors ? Object.values(result.errors).flat().join(", ") : 'İşlem başarısız';
+            showToast(errorMsg, 'error');
+        }
+    } catch (error) {
+        console.error('Fatura oluşturma hatası:', error);
+        showToast('Fatura oluşturulurken teknik bir hata oluştu', 'error');
+    }
+}
+
+
+    </script>
+</body>
+</html>

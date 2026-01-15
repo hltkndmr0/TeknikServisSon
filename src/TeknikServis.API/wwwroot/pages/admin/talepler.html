@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Talepleri - Teknik Servis</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/responsive.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">⚙️</div>
+                    <h2>Yönetim Paneli</h2>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-name" id="user-name">-</div>
+                    <div class="sidebar-user-role">Sistem Yöneticisi</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="talepler.html" class="active"><span class="sidebar-menu-icon">📝</span> Kayıt Talepleri</a></li>
+                <li><a href="dukkanlar.html"><span class="sidebar-menu-icon">🏪</span> Dükkanlar</a></li>
+                <li><a href="#" onclick="logout(); return false;"><span class="sidebar-menu-icon">🚪</span> Çıkış</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1>Kayıt Talepleri</h1>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="filterByStatus(null)">Tümü</button>
+                <button class="tab" onclick="filterByStatus(0)">Bekleyenler</button>
+                <button class="tab" onclick="filterByStatus(1)">Onaylananlar</button>
+                <button class="tab" onclick="filterByStatus(2)">Reddedilenler</button>
+            </div>
+            
+            <!-- Talepler Listesi -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Firma</th>
+                                <th>Yetkili</th>
+                                <th>Telefon</th>
+                                <th>E-posta</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="talepler-body">
+                            <tr>
+                                <td colspan="7" class="text-center">Yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Mobile Cards -->
+                <div class="mobile-cards" id="talepler-mobile"></div>
+                
+                <!-- Pagination -->
+                <div id="pagination-container"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Talep Detay Modal -->
+    <div class="modal modal-lg" id="talep-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Talep Detayı</h2>
+                <button class="modal-close" onclick="closeModal('talep-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid">
+                    <div class="detail-section">
+                        <h3>Firma Bilgileri</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">Firma Adı</span>
+                            <span class="detail-value" id="detay-firma-adi">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Telefon</span>
+                            <span class="detail-value" id="detay-firma-telefon">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">E-posta</span>
+                            <span class="detail-value" id="detay-firma-email">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Adres</span>
+                            <span class="detail-value" id="detay-firma-adres">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Vergi No</span>
+                            <span class="detail-value" id="detay-vergi-no">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h3>Yetkili Bilgileri</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">Ad Soyad</span>
+                            <span class="detail-value" id="detay-yetkili-ad">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Telefon</span>
+                            <span class="detail-value" id="detay-yetkili-telefon">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">E-posta</span>
+                            <span class="detail-value" id="detay-yetkili-email">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Talep Tarihi</span>
+                            <span class="detail-value" id="detay-tarih">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Durum</span>
+                            <span class="detail-value" id="detay-durum">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onay/Red işlemleri (sadece bekleyenler için) -->
+                <div id="islem-alani" style="display: none;">
+                    <div class="divider"></div>
+                    <div class="form-group">
+                        <label for="islem-not">Not / Açıklama</label>
+                        <textarea id="islem-not" class="form-control" rows="3" placeholder="Onay veya red sebebi..."></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="onaylaTalep()">✓ Onayla</button>
+                        <button class="btn btn-danger" onclick="reddetTalep()">✕ Reddet</button>
+                    </div>
+                </div>
+                
+                <!-- Onay/Red bilgisi (işlem yapılmışsa) -->
+                <div id="islem-sonucu" style="display: none;">
+                    <div class="divider"></div>
+                    <div class="detail-row">
+                        <span class="detail-label">İşlem Notu</span>
+                        <span class="detail-value" id="detay-islem-notu">-</span>
+                    </div>
+                </div>
+                
+                <!-- Giriş Bilgileri (onaylanmış talep için) -->
+                <div id="giris-bilgileri" style="display: none;">
+                    <div class="divider"></div>
+                    <h3 style="color: var(--accent); margin-bottom: 16px;">✅ Oluşturulan Giriş Bilgileri</h3>
+                    <div class="detail-row" style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                        <span class="detail-label">Firma Kodu</span>
+                        <span class="detail-value" id="detay-firma-kodu" style="font-family: monospace; font-weight: bold; color: var(--primary);">-</span>
+                    </div>
+                    <div class="detail-row" style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                        <span class="detail-label">E-posta</span>
+                        <span class="detail-value" id="detay-giris-email">-</span>
+                    </div>
+                    <div class="detail-row" style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px;">
+                        <span class="detail-label">Şifre</span>
+                        <span class="detail-value" id="detay-sifre" style="font-family: monospace; font-weight: bold; color: var(--warning);">-</span>
+                    </div>
+                    <p style="margin-top: 12px; font-size: 13px; color: var(--text-muted);">
+                        ⚠️ Bu bilgileri müşteriye iletin.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../../js/config.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/utils.js"></script>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/app.js"></script>
+    <script>
+        let currentPage = 1;
+        let currentStatus = null;
+        let selectedTalep = null;
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.requireSuperAdmin()) return;
+            initPage();
+        });
+        
+        function initPage() {
+            displayUserInfo();
+            loadTalepler();
+        }
+        
+        function displayUserInfo() {
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.adSoyad;
+            }
+        }
+        
+        // Duruma göre filtrele
+        function filterByStatus(status) {
+            currentStatus = status;
+            currentPage = 1;
+            
+            // Tab'ları güncelle
+            document.querySelectorAll('.tab').forEach((tab, index) => {
+                tab.classList.remove('active');
+                if ((status === null && index === 0) ||
+                    (status === 0 && index === 1) ||
+                    (status === 1 && index === 2) ||
+                    (status === 2 && index === 3)) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            loadTalepler();
+        }
+        
+        // Talepleri yükle
+        async function loadTalepler(page = 1) {
+            currentPage = page;
+            
+            const tbody = document.getElementById('talepler-body');
+            const mobileContainer = document.getElementById('talepler-mobile');
+            
+            tbody.innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div></td></tr>';
+            
+            try {
+                const result = await AuthAPI.getTumTalepler(currentStatus, page, 20);
+                
+                if (!result?.success) {
+                    tbody.innerHTML = '<tr><td colspan="7"><div class="alert alert-danger">Veriler yüklenemedi</div></td></tr>';
+                    return;
+                }
+                
+                const talepler = result.data.items || [];
+                
+                if (talepler.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📝</div><h3>Talep bulunamadı</h3></div></td></tr>';
+                    mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>Talep bulunamadı</h3></div>';
+                    document.getElementById('pagination-container').innerHTML = '';
+                    return;
+                }
+                
+                // Tablo
+                tbody.innerHTML = talepler.map(t => `
+                    <tr>
+                        <td><strong>${t.firmaAdi}</strong></td>
+                        <td>${t.yetkiliAdSoyad}</td>
+                        <td>${formatPhone(t.firmaTelefon)}</td>
+                        <td>${t.firmaEmail}</td>
+                        <td>${formatDate(t.talepTarihi)}</td>
+                        <td>${getRequestStatusBadge(t.durum)}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="showTalepDetay('${t.id}')">Detay</button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Mobil kartlar
+                mobileContainer.innerHTML = talepler.map(t => `
+                    <div class="mobile-card">
+                        <div class="mobile-card-header">
+                            <span class="mobile-card-title">${t.firmaAdi}</span>
+                            ${getRequestStatusBadge(t.durum)}
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Yetkili</span>
+                            <span class="mobile-card-value">${t.yetkiliAdSoyad}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Telefon</span>
+                            <span class="mobile-card-value">${formatPhone(t.firmaTelefon)}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Tarih</span>
+                            <span class="mobile-card-value">${formatDate(t.talepTarihi)}</span>
+                        </div>
+                        <div class="mobile-card-actions">
+                            <button class="btn btn-secondary" onclick="showTalepDetay('${t.id}')">Detay</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Sayfalama
+                const totalPages = result.data.totalPages || 1;
+                document.getElementById('pagination-container').innerHTML = createPagination(currentPage, totalPages, 'loadTalepler');
+                
+            } catch (error) {
+                console.error('Talepler yüklenirken hata:', error);
+                tbody.innerHTML = '<tr><td colspan="7"><div class="alert alert-danger">Bir hata oluştu</div></td></tr>';
+            }
+        }
+        
+        // Talep detayını göster
+        async function showTalepDetay(id) {
+            try {
+                const result = await AuthAPI.getTalepById(id);
+                
+                if (!result?.success) {
+                    showToast('Talep bulunamadı', 'error');
+                    return;
+                }
+                
+                selectedTalep = result.data;
+                const t = result.data;
+                
+                // Detayları doldur
+                document.getElementById('detay-firma-adi').textContent = t.firmaAdi;
+                document.getElementById('detay-firma-telefon').textContent = formatPhone(t.firmaTelefon);
+                document.getElementById('detay-firma-email').textContent = t.firmaEmail;
+                document.getElementById('detay-firma-adres').textContent = t.firmaAdres || '-';
+                document.getElementById('detay-vergi-no').textContent = t.vergiNo || '-';
+                document.getElementById('detay-yetkili-ad').textContent = t.yetkiliAdSoyad;
+                document.getElementById('detay-yetkili-telefon').textContent = formatPhone(t.yetkiliTelefon);
+                document.getElementById('detay-yetkili-email').textContent = t.yetkiliEmail;
+                document.getElementById('detay-tarih').textContent = formatDateTime(t.talepTarihi);
+                document.getElementById('detay-durum').innerHTML = getRequestStatusBadge(t.durum);
+                
+                // Bekleyen talep ise işlem alanını göster
+                if (t.durum === 0) {
+                    document.getElementById('islem-alani').style.display = 'block';
+                    document.getElementById('islem-sonucu').style.display = 'none';
+                    document.getElementById('giris-bilgileri').style.display = 'none';
+                    document.getElementById('islem-not').value = '';
+                } else {
+                    document.getElementById('islem-alani').style.display = 'none';
+                    document.getElementById('islem-sonucu').style.display = 'block';
+                    document.getElementById('detay-islem-notu').textContent = t.notlar || t.redNedeni || '-';
+                    
+                    // Onaylanmış ise giriş bilgilerini göster
+                    if (t.durum === 1 && t.olusturulanFirmaKodu) {
+                        document.getElementById('giris-bilgileri').style.display = 'block';
+                        document.getElementById('detay-firma-kodu').textContent = t.olusturulanFirmaKodu;
+                        document.getElementById('detay-giris-email').textContent = t.yetkiliEmail;
+                        document.getElementById('detay-sifre').textContent = t.olusturulanSifre || '-';
+                    } else {
+                        document.getElementById('giris-bilgileri').style.display = 'none';
+                    }
+                }
+                
+                openModal('talep-modal');
+                
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // Talep onayla
+        async function onaylaTalep() {
+            if (!selectedTalep) return;
+            if (!confirmAction('Bu talebi onaylamak istediğinize emin misiniz?')) return;
+            
+            try {
+                const notlar = document.getElementById('islem-not').value;
+                const result = await AuthAPI.talepOnayla(selectedTalep.id, notlar);
+                
+                if (result?.success) {
+                    showToast('Talep onaylandı!', 'success');
+                    closeModal('talep-modal');
+                    loadTalepler(currentPage);
+                } else {
+                    showToast(result?.errors?.[0] || result?.message || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // Talep reddet
+        async function reddetTalep() {
+            if (!selectedTalep) return;
+            
+            const redNedeni = document.getElementById('islem-not').value;
+            if (!redNedeni.trim()) {
+                showToast('Red sebebi girmelisiniz', 'error');
+                return;
+            }
+            
+            if (!confirmAction('Bu talebi reddetmek istediğinize emin misiniz?')) return;
+            
+            try {
+                const result = await AuthAPI.talepReddet(selectedTalep.id, redNedeni);
+                
+                if (result?.success) {
+                    showToast('Talep reddedildi', 'success');
+                    closeModal('talep-modal');
+                    loadTalepler(currentPage);
+                } else {
+                    showToast(result?.errors?.[0] || result?.message || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

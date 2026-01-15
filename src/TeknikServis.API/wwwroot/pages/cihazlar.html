@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cihazlar - Teknik Servis</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">🔧</div>
+                    <h2>Teknik Servis</h2>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-name" id="user-name">-</div>
+                    <div class="sidebar-user-role" id="dukkan-name">-</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><span class="sidebar-menu-icon">📊</span> Dashboard</a></li>
+                <li><a href="is-emirleri.html"><span class="sidebar-menu-icon">📋</span> İş Emirleri</a></li>
+                <li><a href="musteriler.html"><span class="sidebar-menu-icon">👥</span> Müşteriler</a></li>
+                <li><a href="cihazlar.html" class="active"><span class="sidebar-menu-icon">📱</span> Cihazlar</a></li>
+                <li><a href="#" onclick="logout(); return false;"><span class="sidebar-menu-icon">🚪</span> Çıkış</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1>Cihazlar</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="openModal('kategori-modal')">+ Kategori</button>
+                    <button class="btn btn-secondary" onclick="openModal('tanim-modal')">+ Cihaz Tanımı</button>
+                    <button class="btn btn-primary" onclick="openNewCihazModal()">+ Yeni Cihaz</button>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('cihazlar')">Müşteri Cihazları</button>
+                <button class="tab" onclick="switchTab('tanimlar')">Cihaz Tanımları</button>
+                <button class="tab" onclick="switchTab('kategoriler')">Kategoriler</button>
+            </div>
+            
+            <!-- Cihazlar Tab -->
+            <div class="tab-content active" id="tab-cihazlar">
+                <div class="filters">
+                    <div class="search-box">
+                        <input type="text" id="cihaz-search" class="form-control" placeholder="Müşteri, marka, model veya seri no ara..." onkeyup="handleCihazSearch(event)">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Cihaz</th>
+                                    <th>Müşteri</th>
+                                    <th>Seri No</th>
+                                    <th>IMEI</th>
+                                    <th>Renk</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cihazlar-body">
+                                <tr><td colspan="6" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mobile-cards" id="cihazlar-mobile"></div>
+                    <div id="cihazlar-pagination"></div>
+                </div>
+            </div>
+            
+            <!-- Tanımlar Tab -->
+            <div class="tab-content" id="tab-tanimlar">
+                <div class="filters">
+                    <select id="tanim-kategori-filter" class="form-control" onchange="loadTanimlar()">
+                        <option value="">Tüm Kategoriler</option>
+                    </select>
+                    <div class="search-box">
+                        <input type="text" id="tanim-search" class="form-control" placeholder="Marka veya model ara..." onkeyup="handleTanimSearch(event)">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Kategori</th>
+                                    <th>Marka</th>
+                                    <th>Model</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tanimlar-body">
+                                <tr><td colspan="4" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mobile-cards" id="tanimlar-mobile"></div>
+                </div>
+            </div>
+            
+            <!-- Kategoriler Tab -->
+            <div class="tab-content" id="tab-kategoriler">
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Kategori Adı</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kategoriler-body">
+                                <tr><td colspan="2" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mobile-cards" id="kategoriler-mobile"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Kategori Modal -->
+    <div class="modal" id="kategori-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Kategori</h2>
+                <button class="modal-close" onclick="closeModal('kategori-modal')">&times;</button>
+            </div>
+            <form id="kategori-form" onsubmit="handleKategoriSubmit(event)">
+                <div class="form-group">
+                    <label for="kategori-ad" class="required">Kategori Adı</label>
+                    <input type="text" id="kategori-ad" name="ad" class="form-control" placeholder="Örn: Telefon, Tablet, Laptop" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('kategori-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="kategori-submit-btn">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Cihaz Tanımı Modal -->
+    <div class="modal" id="tanim-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Cihaz Tanımı</h2>
+                <button class="modal-close" onclick="closeModal('tanim-modal')">&times;</button>
+            </div>
+            <form id="tanim-form" onsubmit="handleTanimSubmit(event)">
+                <div class="form-group">
+                    <label for="tanim-kategori" class="required">Kategori</label>
+                    <select id="tanim-kategori" name="kategoriId" class="form-control" required>
+                        <option value="">Seçiniz...</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tanim-marka" class="required">Marka</label>
+                        <input type="text" id="tanim-marka" name="marka" class="form-control" placeholder="Örn: Apple, Samsung" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tanim-model" class="required">Model</label>
+                        <input type="text" id="tanim-model" name="model" class="form-control" placeholder="Örn: iPhone 15 Pro" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('tanim-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="tanim-submit-btn">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Cihaz Modal -->
+    <div class="modal" id="cihaz-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="cihaz-modal-title">Yeni Cihaz</h2>
+                <button class="modal-close" onclick="closeModal('cihaz-modal')">&times;</button>
+            </div>
+            <form id="cihaz-form" onsubmit="handleCihazSubmit(event)">
+                <input type="hidden" id="cihaz-id" name="id">
+                
+                <div class="form-group">
+                    <label for="cihaz-musteri" class="required">Müşteri</label>
+                    <select id="cihaz-musteri" name="musteriId" class="form-control" required>
+                        <option value="">Seçiniz...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cihaz-tanim" class="required">Cihaz</label>
+                    <select id="cihaz-tanim" name="cihazTanimId" class="form-control" required>
+                        <option value="">Seçiniz...</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cihaz-seri">Seri No</label>
+                        <input type="text" id="cihaz-seri" name="seriNo" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="cihaz-imei">IMEI</label>
+                        <input type="text" id="cihaz-imei" name="imei" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cihaz-renk">Renk</label>
+                        <input type="text" id="cihaz-renk" name="renk" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="cihaz-garanti">Garanti Bitiş</label>
+                        <input type="date" id="cihaz-garanti" name="garantiBitisTarihi" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cihaz-notlar">Notlar</label>
+                    <textarea id="cihaz-notlar" name="notlar" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('cihaz-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="cihaz-submit-btn">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        let kategoriler = [];
+        let tanimlar = [];
+        let cihazlar = [];
+        let cihazSearchTerm = '';
+        let tanimSearchTerm = '';
+        let currentPage = 1;
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.requireAuth()) return;
+            initPage();
+        });
+        
+        function initPage() {
+            displayUserInfo();
+            loadKategoriler();
+            loadTanimlar();
+            loadCihazlar();
+            loadMusterilerForSelect();
+        }
+        
+        function displayUserInfo() {
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.adSoyad;
+                document.getElementById('dukkan-name').textContent = user.dukkanAdi || '-';
+            }
+        }
+        
+        // Tab değiştir
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+        }
+        
+        // ==================== CİHAZLAR ====================
+        
+        // Tüm cihazları yükle
+        async function loadCihazlar(page = 1) {
+            currentPage = page;
+            const tbody = document.getElementById('cihazlar-body');
+            const mobileContainer = document.getElementById('cihazlar-mobile');
+            
+            tbody.innerHTML = '<tr><td colspan="6"><div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div></td></tr>';
+            
+            try {
+                const result = await CihazlarAPI.getAll(cihazSearchTerm, page, 20);
+                
+                if (!result?.success) {
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="alert alert-danger">Veriler yüklenemedi</div></td></tr>';
+                    return;
+                }
+                
+                cihazlar = result.data.items || [];
+                
+                if (cihazlar.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📱</div><h3>Cihaz bulunamadı</h3></div></td></tr>';
+                    mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📱</div><h3>Cihaz bulunamadı</h3></div>';
+                    document.getElementById('cihazlar-pagination').innerHTML = '';
+                    return;
+                }
+                
+                // Tablo
+                tbody.innerHTML = cihazlar.map(c => `
+                    <tr>
+                        <td><strong>${c.marka} ${c.model}</strong><br><small style="color: var(--text-muted);">${c.kategoriAd || ''}</small></td>
+                        <td>${c.musteriAd || '-'}</td>
+                        <td>${c.seriNo || '-'}</td>
+                        <td>${c.imei || '-'}</td>
+                        <td>${c.renk || '-'}</td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-secondary" onclick="editCihaz('${c.id}')">Düzenle</button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Mobil kartlar
+                mobileContainer.innerHTML = cihazlar.map(c => `
+                    <div class="mobile-card">
+                        <div class="mobile-card-header">
+                            <span class="mobile-card-title">${c.marka} ${c.model}</span>
+                            <span class="badge badge-primary">${c.kategoriAd || ''}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Müşteri</span>
+                            <span class="mobile-card-value">${c.musteriAd || '-'}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Seri No</span>
+                            <span class="mobile-card-value">${c.seriNo || '-'}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">IMEI</span>
+                            <span class="mobile-card-value">${c.imei || '-'}</span>
+                        </div>
+                        <div class="mobile-card-actions">
+                            <button class="btn btn-secondary" onclick="editCihaz('${c.id}')">Düzenle</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Sayfalama
+                const totalPages = result.data.totalPages || 1;
+                document.getElementById('cihazlar-pagination').innerHTML = createPagination(currentPage, totalPages, 'loadCihazlar');
+                
+            } catch (error) {
+                console.error('Cihazlar yüklenirken hata:', error);
+                tbody.innerHTML = '<tr><td colspan="6"><div class="alert alert-danger">Bir hata oluştu</div></td></tr>';
+            }
+        }
+        
+        // Cihaz arama
+        const handleCihazSearch = debounce(function(e) {
+            cihazSearchTerm = e.target.value;
+            loadCihazlar(1);
+        }, 300);
+        
+        // Yeni cihaz modal
+        function openNewCihazModal() {
+            document.getElementById('cihaz-modal-title').textContent = 'Yeni Cihaz';
+            document.getElementById('cihaz-id').value = '';
+            resetForm('cihaz-form');
+            openModal('cihaz-modal');
+        }
+        
+        // Cihaz düzenle
+        async function editCihaz(id) {
+            try {
+                const result = await CihazlarAPI.getById(id);
+                
+                if (!result?.success) {
+                    showToast('Cihaz bulunamadı', 'error');
+                    return;
+                }
+                
+                const c = result.data;
+                
+                document.getElementById('cihaz-modal-title').textContent = 'Cihaz Düzenle';
+                document.getElementById('cihaz-id').value = c.id;
+                document.getElementById('cihaz-musteri').value = c.musteriId;
+                document.getElementById('cihaz-tanim').value = c.cihazTanimId;
+                document.getElementById('cihaz-seri').value = c.seriNo || '';
+                document.getElementById('cihaz-imei').value = c.imei || '';
+                document.getElementById('cihaz-renk').value = c.renk || '';
+                document.getElementById('cihaz-garanti').value = c.garantiBitisTarihi ? c.garantiBitisTarihi.split('T')[0] : '';
+                document.getElementById('cihaz-notlar').value = c.notlar || '';
+                
+                openModal('cihaz-modal');
+                
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            }
+        }
+        
+        // Cihaz kaydet
+        async function handleCihazSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('cihaz-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const id = document.getElementById('cihaz-id').value;
+                const data = {
+                    musteriId: document.getElementById('cihaz-musteri').value,
+                    cihazTanimId: document.getElementById('cihaz-tanim').value,
+                    seriNo: document.getElementById('cihaz-seri').value || null,
+                    imei: document.getElementById('cihaz-imei').value || null,
+                    renk: document.getElementById('cihaz-renk').value || null,
+                    garantiBitisTarihi: document.getElementById('cihaz-garanti').value || null,
+                    notlar: document.getElementById('cihaz-notlar').value || null
+                };
+                
+                let result;
+                if (id) {
+                    data.id = id;
+                    result = await CihazlarAPI.update(data);
+                } else {
+                    result = await CihazlarAPI.create(data);
+                }
+                
+                if (result?.success) {
+                    showToast(id ? 'Cihaz güncellendi' : 'Cihaz oluşturuldu', 'success');
+                    closeModal('cihaz-modal');
+                    loadCihazlar(currentPage);
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // ==================== KATEGORİLER ====================
+        
+        async function loadKategoriler() {
+            try {
+                const result = await CihazlarAPI.getKategoriler();
+                
+                if (result?.success) {
+                    kategoriler = result.data || [];
+                    renderKategoriler();
+                    populateKategoriSelects();
+                }
+            } catch (error) {
+                console.error('Kategoriler yüklenirken hata:', error);
+            }
+        }
+        
+        function renderKategoriler() {
+            const tbody = document.getElementById('kategoriler-body');
+            const mobileContainer = document.getElementById('kategoriler-mobile');
+            
+            if (kategoriler.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2"><div class="empty-state"><div class="empty-state-icon">📁</div><h3>Kategori bulunamadı</h3></div></td></tr>';
+                mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><h3>Kategori bulunamadı</h3></div>';
+                return;
+            }
+            
+            tbody.innerHTML = kategoriler.map(k => `
+                <tr>
+                    <td><strong>${k.ad}</strong></td>
+                    <td>${k.aktif ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-danger">Pasif</span>'}</td>
+                </tr>
+            `).join('');
+            
+            mobileContainer.innerHTML = kategoriler.map(k => `
+                <div class="mobile-card">
+                    <div class="mobile-card-header">
+                        <span class="mobile-card-title">${k.ad}</span>
+                        ${k.aktif ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-danger">Pasif</span>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function populateKategoriSelects() {
+            const options = kategoriler.map(k => `<option value="${k.id}">${k.ad}</option>`).join('');
+            document.getElementById('tanim-kategori').innerHTML = '<option value="">Seçiniz...</option>' + options;
+            document.getElementById('tanim-kategori-filter').innerHTML = '<option value="">Tüm Kategoriler</option>' + options;
+        }
+        
+        async function handleKategoriSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('kategori-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const ad = document.getElementById('kategori-ad').value;
+                const result = await CihazlarAPI.createKategori(ad);
+                
+                if (result?.success) {
+                    showToast('Kategori oluşturuldu', 'success');
+                    closeModal('kategori-modal');
+                    document.getElementById('kategori-ad').value = '';
+                    loadKategoriler();
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // ==================== TANIMLAR ====================
+        
+        async function loadTanimlar() {
+            const kategoriId = document.getElementById('tanim-kategori-filter')?.value || null;
+            
+            try {
+                const result = await CihazlarAPI.getTanimlar(kategoriId, tanimSearchTerm);
+                
+                if (result?.success) {
+                    tanimlar = result.data || [];
+                    renderTanimlar();
+                    populateTanimSelect();
+                }
+            } catch (error) {
+                console.error('Tanımlar yüklenirken hata:', error);
+            }
+        }
+        
+        function renderTanimlar() {
+            const tbody = document.getElementById('tanimlar-body');
+            const mobileContainer = document.getElementById('tanimlar-mobile');
+            
+            if (tanimlar.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">📱</div><h3>Cihaz tanımı bulunamadı</h3></div></td></tr>';
+                mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📱</div><h3>Cihaz tanımı bulunamadı</h3></div>';
+                return;
+            }
+            
+            tbody.innerHTML = tanimlar.map(t => `
+                <tr>
+                    <td>${t.kategoriAd}</td>
+                    <td><strong>${t.marka}</strong></td>
+                    <td>${t.model}</td>
+                    <td>${t.aktif ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-danger">Pasif</span>'}</td>
+                </tr>
+            `).join('');
+            
+            mobileContainer.innerHTML = tanimlar.map(t => `
+                <div class="mobile-card">
+                    <div class="mobile-card-header">
+                        <span class="mobile-card-title">${t.marka} ${t.model}</span>
+                        ${t.aktif ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-danger">Pasif</span>'}
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Kategori</span>
+                        <span class="mobile-card-value">${t.kategoriAd}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function populateTanimSelect() {
+            const options = tanimlar.map(t => `<option value="${t.id}">${t.marka} ${t.model}</option>`).join('');
+            document.getElementById('cihaz-tanim').innerHTML = '<option value="">Seçiniz...</option>' + options;
+        }
+        
+        const handleTanimSearch = debounce(function(e) {
+            tanimSearchTerm = e.target.value;
+            loadTanimlar();
+        }, 300);
+        
+        async function handleTanimSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('tanim-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const data = {
+                    kategoriId: document.getElementById('tanim-kategori').value,
+                    marka: document.getElementById('tanim-marka').value,
+                    model: document.getElementById('tanim-model').value
+                };
+                
+                const result = await CihazlarAPI.createTanim(data);
+                
+                if (result?.success) {
+                    showToast('Cihaz tanımı oluşturuldu', 'success');
+                    closeModal('tanim-modal');
+                    resetForm('tanim-form');
+                    loadTanimlar();
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // ==================== MÜŞTERİLER (SELECT İÇİN) ====================
+        
+        async function loadMusterilerForSelect() {
+            try {
+                const result = await MusterilerAPI.getAll('', 1, 1000);
+                
+                if (result?.success) {
+                    const musteriler = result.data.items || [];
+                    const options = musteriler.map(m => `<option value="${m.id}">${m.adSoyad || m.firmaAdi} - ${m.telefon}</option>`).join('');
+                    document.getElementById('cihaz-musteri').innerHTML = '<option value="">Seçiniz...</option>' + options;
+                }
+            } catch (error) {
+                console.error('Müşteriler yüklenirken hata:', error);
+            }
+        }
+    </script>
+</body>
+</html>

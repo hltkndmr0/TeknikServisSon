@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İş Emirleri - Teknik Servis</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">🔧</div>
+                    <h2>Teknik Servis</h2>
+                </div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-name" id="user-name">-</div>
+                    <div class="sidebar-user-role" id="dukkan-name">-</div>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html"><span class="sidebar-menu-icon">📊</span> Dashboard</a></li>
+                <li><a href="is-emirleri.html" class="active"><span class="sidebar-menu-icon">📋</span> İş Emirleri</a></li>
+                <li><a href="musteriler.html"><span class="sidebar-menu-icon">👥</span> Müşteriler</a></li>
+                <li><a href="cihazlar.html"><span class="sidebar-menu-icon">📱</span> Cihazlar</a></li>
+                <li><a href="#" onclick="logout(); return false;"><span class="sidebar-menu-icon">🚪</span> Çıkış</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1>İş Emirleri</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openNewIsEmriModal()">+ Yeni İş Emri</button>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="search-input" class="form-control" placeholder="İş emri no, müşteri veya seri no ara..." onkeyup="handleSearch(event)">
+                </div>
+                <select id="durum-filter" class="form-control" onchange="loadIsEmirleri()">
+                    <option value="">Tüm Durumlar</option>
+                </select>
+                <select id="oncelik-filter" class="form-control" onchange="loadIsEmirleri()">
+                    <option value="">Tüm Öncelikler</option>
+                    <option value="0">Düşük</option>
+                    <option value="1">Normal</option>
+                    <option value="2">Acil</option>
+                </select>
+            </div>
+            
+            <!-- İş Emirleri Listesi -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>İş Emri No</th>
+                                <th>Müşteri</th>
+                                <th>Cihaz</th>
+                                <th>Arıza</th>
+                                <th>Durum</th>
+                                <th>Öncelik</th>
+                                <th>Tarih</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="is-emirleri-body">
+                            <tr>
+                                <td colspan="8" class="text-center">Yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Mobile Cards -->
+                <div class="mobile-cards" id="is-emirleri-mobile"></div>
+                
+                <!-- Pagination -->
+                <div id="pagination-container"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Yeni İş Emri Modal -->
+    <div class="modal modal-lg" id="is-emri-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni İş Emri</h2>
+                <button class="modal-close" onclick="closeModal('is-emri-modal')">&times;</button>
+            </div>
+            <form id="is-emri-form" onsubmit="handleIsEmriSubmit(event)">
+                <!-- Adım 1: Müşteri Seçimi -->
+                <div id="step-1" class="form-step">
+                    <div class="divider-text">Müşteri Seçimi</div>
+                    
+                    <div class="form-group">
+                        <label>Müşteri Ara</label>
+                        <input type="text" id="musteri-search" class="form-control" placeholder="Telefon veya isim ile ara..." onkeyup="handleMusteriSearch(event)">
+                    </div>
+                    
+                    <div id="musteri-results" class="search-results"></div>
+                    
+                    <div id="selected-musteri" class="selected-item" style="display: none;">
+                        <input type="hidden" id="musteri-id" name="musteriId">
+                        <div class="selected-item-info">
+                            <strong id="selected-musteri-name"></strong>
+                            <small id="selected-musteri-phone"></small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="clearMusteri()">✕</button>
+                    </div>
+                    
+                    <div class="text-center mt-20">
+                        <button type="button" class="btn btn-secondary" onclick="openModal('yeni-musteri-modal')">+ Yeni Müşteri Ekle</button>
+                    </div>
+                </div>
+                
+                <!-- Adım 2: Cihaz Seçimi -->
+                <div id="step-2" class="form-step" style="display: none;">
+                    <div class="divider-text">Cihaz Seçimi</div>
+                    
+                    <div id="musteri-cihazlari"></div>
+                    
+                    <div id="selected-cihaz" class="selected-item" style="display: none;">
+                        <input type="hidden" id="cihaz-id" name="cihazId">
+                        <div class="selected-item-info">
+                            <strong id="selected-cihaz-name"></strong>
+                            <small id="selected-cihaz-seri"></small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="clearCihaz()">✕</button>
+                    </div>
+                    
+                    <div class="text-center mt-20">
+                        <button type="button" class="btn btn-secondary" onclick="openModal('yeni-cihaz-modal')">+ Yeni Cihaz Ekle</button>
+                    </div>
+                </div>
+                
+                <!-- Adım 3: Arıza Bilgileri -->
+                <div id="step-3" class="form-step" style="display: none;">
+                    <div class="divider-text">Arıza Bilgileri</div>
+                    
+                    <div class="form-group">
+                        <label for="ariza-aciklamasi" class="required">Arıza Açıklaması</label>
+                        <textarea id="ariza-aciklamasi" name="arizaAciklamasi" class="form-control" rows="3" placeholder="Müşterinin belirttiği arıza..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="on-teshis">Ön Teşhis</label>
+                        <textarea id="on-teshis" name="onTeshis" class="form-control" rows="2" placeholder="İlk inceleme sonucu..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tahmini-sure">Tahmini Süre (Gün)</label>
+                            <input type="number" id="tahmini-sure" name="tahminiSureGun" class="form-control" min="1" value="3">
+                        </div>
+                        <div class="form-group">
+                            <label for="tahmini-ucret">Tahmini Ücret (₺)</label>
+                            <input type="number" id="tahmini-ucret" name="tahminiUcret" class="form-control" min="0" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="oncelik">Öncelik</label>
+                            <select id="oncelik" name="oncelik" class="form-control">
+                                <option value="0">Düşük</option>
+                                <option value="1" selected>Normal</option>
+                                <option value="2">Acil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="garanti">Garanti Kapsamında</label>
+                            <select id="garanti" name="garantiKapsaminda" class="form-control">
+                                <option value="false">Hayır</option>
+                                <option value="true">Evet</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('is-emri-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">İş Emri Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Yeni Müşteri Modal (Hızlı Ekleme) -->
+    <div class="modal" id="yeni-musteri-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Hızlı Müşteri Ekle</h2>
+                <button class="modal-close" onclick="closeModal('yeni-musteri-modal')">&times;</button>
+            </div>
+            <form id="hizli-musteri-form" onsubmit="handleHizliMusteriSubmit(event)">
+                <div class="form-group">
+                    <label for="hizli-ad-soyad" class="required">Ad Soyad</label>
+                    <input type="text" id="hizli-ad-soyad" name="adSoyad" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="hizli-telefon" class="required">Telefon</label>
+                    <input type="tel" id="hizli-telefon" name="telefon" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="hizli-email">E-posta</label>
+                    <input type="email" id="hizli-email" name="email" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('yeni-musteri-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="hizli-musteri-btn">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Yeni Cihaz Modal (Hızlı Ekleme) -->
+    <div class="modal" id="yeni-cihaz-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Hızlı Cihaz Ekle</h2>
+                <button class="modal-close" onclick="closeModal('yeni-cihaz-modal')">&times;</button>
+            </div>
+            <form id="hizli-cihaz-form" onsubmit="handleHizliCihazSubmit(event)">
+                <div class="form-group">
+                    <label for="hizli-cihaz-tanim" class="required">Cihaz</label>
+                    <select id="hizli-cihaz-tanim" name="cihazTanimId" class="form-control" required>
+                        <option value="">Seçiniz...</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hizli-seri-no">Seri No</label>
+                        <input type="text" id="hizli-seri-no" name="seriNo" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="hizli-imei">IMEI</label>
+                        <input type="text" id="hizli-imei" name="imei" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="hizli-renk">Renk</label>
+                    <input type="text" id="hizli-renk" name="renk" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('yeni-cihaz-modal')">İptal</button>
+                    <button type="submit" class="btn btn-primary" id="hizli-cihaz-btn">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <style>
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-top: 10px;
+        }
+        
+        .search-results:empty {
+            display: none;
+        }
+        
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-item:hover {
+            background: var(--bg-hover);
+        }
+        
+        .search-result-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .search-result-item small {
+            color: var(--text-muted);
+        }
+        
+        .selected-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--success);
+            border-radius: var(--radius-md);
+            margin-top: 16px;
+        }
+        
+        .selected-item-info strong {
+            display: block;
+            color: var(--text-primary);
+        }
+        
+        .selected-item-info small {
+            color: var(--text-muted);
+        }
+        
+        .cihaz-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .cihaz-item {
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .cihaz-item:hover {
+            border-color: var(--text-primary);
+        }
+        
+        .cihaz-item.selected {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .cihaz-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .cihaz-item small {
+            color: var(--text-muted);
+        }
+    </style>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        let currentPage = 1;
+        let searchTerm = '';
+        let durumlar = [];
+        let cihazTanimlari = [];
+        let selectedMusteriId = null;
+        let selectedCihazId = null;
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Auth.requireAuth()) return;
+            initPage();
+        });
+        
+        function initPage() {
+            displayUserInfo();
+            loadDurumlar();
+            loadIsEmirleri();
+            loadCihazTanimlari();
+            
+            // URL'de yeni=1 varsa modal aç
+            if (getUrlParam('yeni') === '1') {
+                openNewIsEmriModal();
+            }
+        }
+        
+        function displayUserInfo() {
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.adSoyad;
+                document.getElementById('dukkan-name').textContent = user.dukkanAdi || '-';
+            }
+        }
+        
+        // Durumları yükle
+        async function loadDurumlar() {
+            try {
+                const result = await IsEmirleriAPI.getDurumlar();
+                if (result?.success) {
+                    durumlar = result.data || [];
+                    const select = document.getElementById('durum-filter');
+                    select.innerHTML = '<option value="">Tüm Durumlar</option>' + 
+                        durumlar.map(d => `<option value="${d.id}">${d.ad}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Durumlar yüklenirken hata:', error);
+            }
+        }
+        
+        // Cihaz tanımlarını yükle
+        async function loadCihazTanimlari() {
+            try {
+                const result = await CihazlarAPI.getTanimlar();
+                if (result?.success) {
+                    cihazTanimlari = result.data || [];
+                    const select = document.getElementById('hizli-cihaz-tanim');
+                    select.innerHTML = '<option value="">Seçiniz...</option>' + 
+                        cihazTanimlari.map(t => `<option value="${t.id}">${t.marka} ${t.model}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Cihaz tanımları yüklenirken hata:', error);
+            }
+        }
+        
+        // İş emirlerini yükle
+        async function loadIsEmirleri(page = 1) {
+            currentPage = page;
+            
+            const tbody = document.getElementById('is-emirleri-body');
+            const mobileContainer = document.getElementById('is-emirleri-mobile');
+            
+            tbody.innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div></td></tr>';
+            
+            try {
+                const durumId = document.getElementById('durum-filter').value || null;
+                const oncelik = document.getElementById('oncelik-filter').value;
+                
+                const result = await IsEmirleriAPI.getAll({
+                    arama: searchTerm,
+                    durumId: durumId,
+                    oncelik: oncelik !== '' ? parseInt(oncelik) : null,
+                    page: page,
+                    pageSize: 20
+                });
+                
+                if (!result?.success) {
+                    tbody.innerHTML = '<tr><td colspan="8"><div class="alert alert-danger">Veriler yüklenemedi</div></td></tr>';
+                    return;
+                }
+                
+                const isEmirleri = result.data.items || [];
+                
+                if (isEmirleri.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📋</div><h3>İş emri bulunamadı</h3></div></td></tr>';
+                    mobileContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><h3>İş emri bulunamadı</h3></div>';
+                    document.getElementById('pagination-container').innerHTML = '';
+                    return;
+                }
+                
+                // Tablo
+                tbody.innerHTML = isEmirleri.map(item => `
+                    <tr onclick="window.location.href='is-emri-detay.html?id=${item.id}'" style="cursor: pointer;">
+                        <td><strong>${item.isEmriNo}</strong></td>
+                        <td>${item.musteriAd}</td>
+                        <td>${item.cihazBilgi}</td>
+                        <td><small>${truncateText(item.arizaAciklamasi, 30)}</small></td>
+                        <td>${getStatusBadge(item.durumAd, item.durumRenk)}</td>
+                        <td>${getPriorityBadge(item.oncelik)}</td>
+                        <td>${formatDate(item.olusturmaTarihi)}</td>
+                        <td class="actions">
+                            <a href="is-emri-detay.html?id=${item.id}" class="btn btn-sm btn-secondary" onclick="event.stopPropagation();">Detay</a>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Mobil kartlar
+                mobileContainer.innerHTML = isEmirleri.map(item => `
+                    <div class="mobile-card" onclick="window.location.href='is-emri-detay.html?id=${item.id}'">
+                        <div class="mobile-card-header">
+                            <span class="mobile-card-title">${item.isEmriNo}</span>
+                            ${getStatusBadge(item.durumAd, item.durumRenk)}
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Müşteri</span>
+                            <span class="mobile-card-value">${item.musteriAd}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Cihaz</span>
+                            <span class="mobile-card-value">${item.cihazBilgi}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Öncelik</span>
+                            <span class="mobile-card-value">${getPriorityBadge(item.oncelik)}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Tarih</span>
+                            <span class="mobile-card-value">${formatDate(item.olusturmaTarihi)}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Sayfalama
+                const totalPages = result.data.totalPages || 1;
+                document.getElementById('pagination-container').innerHTML = createPagination(currentPage, totalPages, 'loadIsEmirleri');
+                
+            } catch (error) {
+                console.error('İş emirleri yüklenirken hata:', error);
+                tbody.innerHTML = '<tr><td colspan="8"><div class="alert alert-danger">Bir hata oluştu</div></td></tr>';
+            }
+        }
+        
+        // Metin kısalt
+        function truncateText(text, maxLength) {
+            if (!text) return '-';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+        
+        // Arama
+        const handleSearch = debounce(function(e) {
+            searchTerm = e.target.value;
+            loadIsEmirleri(1);
+        }, 300);
+        
+        // Yeni iş emri modalını aç
+        function openNewIsEmriModal() {
+            selectedMusteriId = null;
+            selectedCihazId = null;
+            
+            document.getElementById('musteri-search').value = '';
+            document.getElementById('musteri-results').innerHTML = '';
+            document.getElementById('selected-musteri').style.display = 'none';
+            document.getElementById('selected-cihaz').style.display = 'none';
+            document.getElementById('musteri-cihazlari').innerHTML = '';
+            
+            document.getElementById('step-1').style.display = 'block';
+            document.getElementById('step-2').style.display = 'none';
+            document.getElementById('step-3').style.display = 'none';
+            
+            resetForm('is-emri-form');
+            openModal('is-emri-modal');
+        }
+        
+        // Müşteri arama
+        const handleMusteriSearch = debounce(async function(e) {
+            const searchTerm = e.target.value.trim();
+            const resultsDiv = document.getElementById('musteri-results');
+            
+            if (searchTerm.length < 2) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            
+            try {
+                const result = await MusterilerAPI.getAll(searchTerm, 1, 10);
+                
+                if (!result?.success || !result.data.items?.length) {
+                    resultsDiv.innerHTML = '<div class="search-result-item"><small>Müşteri bulunamadı</small></div>';
+                    return;
+                }
+                
+                resultsDiv.innerHTML = result.data.items.map(m => `
+                    <div class="search-result-item" onclick="selectMusteri('${m.id}', '${m.adSoyad || m.firmaAdi}', '${m.telefon}')">
+                        <strong>${m.adSoyad || m.firmaAdi}</strong>
+                        <small>${formatPhone(m.telefon)} ${m.email ? '• ' + m.email : ''}</small>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Müşteri aranırken hata:', error);
+            }
+        }, 300);
+        
+        // Müşteri seç
+        async function selectMusteri(id, name, phone) {
+            selectedMusteriId = id;
+            
+            document.getElementById('musteri-id').value = id;
+            document.getElementById('selected-musteri-name').textContent = name;
+            document.getElementById('selected-musteri-phone').textContent = formatPhone(phone);
+            document.getElementById('selected-musteri').style.display = 'flex';
+            document.getElementById('musteri-results').innerHTML = '';
+            document.getElementById('musteri-search').value = '';
+            
+            // Adım 2'yi göster
+            document.getElementById('step-2').style.display = 'block';
+            
+            // Müşterinin cihazlarını yükle
+            await loadMusteriCihazlari(id);
+        }
+        
+        // Müşteri seçimini temizle
+        function clearMusteri() {
+            selectedMusteriId = null;
+            selectedCihazId = null;
+            
+            document.getElementById('musteri-id').value = '';
+            document.getElementById('selected-musteri').style.display = 'none';
+            document.getElementById('step-2').style.display = 'none';
+            document.getElementById('step-3').style.display = 'none';
+            document.getElementById('selected-cihaz').style.display = 'none';
+        }
+        
+        // Müşterinin cihazlarını yükle
+        async function loadMusteriCihazlari(musteriId) {
+            const container = document.getElementById('musteri-cihazlari');
+            container.innerHTML = '<div class="loading"><div class="spinner spinner-sm"></div></div>';
+            
+            try {
+                const result = await CihazlarAPI.getByMusteri(musteriId);
+                
+                if (!result?.success || !result.data?.length) {
+                    container.innerHTML = '<div class="empty-state"><p>Bu müşteriye ait cihaz yok</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <p style="margin-bottom: 10px; color: var(--text-muted);">Müşterinin cihazları:</p>
+                    <div class="cihaz-list">
+                        ${result.data.map(c => `
+                            <div class="cihaz-item" onclick="selectCihaz('${c.id}', '${c.marka} ${c.model}', '${c.seriNo || '-'}')">
+                                <strong>${c.marka} ${c.model}</strong>
+                                <small>Seri: ${c.seriNo || '-'} ${c.imei ? '• IMEI: ' + c.imei : ''}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Cihazlar yüklenirken hata:', error);
+                container.innerHTML = '<div class="alert alert-danger">Cihazlar yüklenemedi</div>';
+            }
+        }
+        
+        // Cihaz seç
+        function selectCihaz(id, name, seriNo) {
+            selectedCihazId = id;
+            
+            // Önceki seçimi kaldır
+            document.querySelectorAll('.cihaz-item').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.cihaz-item')?.classList.add('selected');
+            
+            document.getElementById('cihaz-id').value = id;
+            document.getElementById('selected-cihaz-name').textContent = name;
+            document.getElementById('selected-cihaz-seri').textContent = 'Seri: ' + seriNo;
+            document.getElementById('selected-cihaz').style.display = 'flex';
+            
+            // Adım 3'ü göster
+            document.getElementById('step-3').style.display = 'block';
+        }
+        
+        // Cihaz seçimini temizle
+        function clearCihaz() {
+            selectedCihazId = null;
+            document.getElementById('cihaz-id').value = '';
+            document.getElementById('selected-cihaz').style.display = 'none';
+            document.getElementById('step-3').style.display = 'none';
+            document.querySelectorAll('.cihaz-item').forEach(el => el.classList.remove('selected'));
+        }
+        
+        // İş emri oluştur
+        async function handleIsEmriSubmit(e) {
+            e.preventDefault();
+            
+            if (!selectedMusteriId) {
+                showToast('Lütfen müşteri seçin', 'error');
+                return;
+            }
+            
+            if (!selectedCihazId) {
+                showToast('Lütfen cihaz seçin', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const data = {
+                    musteriId: selectedMusteriId,
+                    cihazId: selectedCihazId,
+                    arizaAciklamasi: document.getElementById('ariza-aciklamasi').value,
+                    onTeshis: document.getElementById('on-teshis').value || null,
+                    tahminiSureGun: parseInt(document.getElementById('tahmini-sure').value) || null,
+                    tahminiUcret: parseFloat(document.getElementById('tahmini-ucret').value) || null,
+                    oncelik: parseInt(document.getElementById('oncelik').value),
+                    garantiKapsaminda: document.getElementById('garanti').value === 'true'
+                };
+                
+                const result = await IsEmirleriAPI.create(data);
+                
+                if (result?.success) {
+                    showToast('İş emri oluşturuldu: ' + result.data.isEmriNo, 'success');
+                    closeModal('is-emri-modal');
+                    loadIsEmirleri(1);
+                    
+                    // Detay sayfasına yönlendir
+                    setTimeout(() => {
+                        window.location.href = 'is-emri-detay.html?id=' + result.data.id;
+                    }, 1000);
+                } else {
+                    showToast(result?.errors?.[0] || result?.message || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Hızlı müşteri ekle
+        async function handleHizliMusteriSubmit(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('hizli-musteri-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const data = {
+                    musteriTipi: 0,
+                    adSoyad: document.getElementById('hizli-ad-soyad').value,
+                    telefon: document.getElementById('hizli-telefon').value,
+                    email: document.getElementById('hizli-email').value || null
+                };
+                
+                const result = await MusterilerAPI.create(data);
+                
+                if (result?.success) {
+                    showToast('Müşteri eklendi', 'success');
+                    closeModal('yeni-musteri-modal');
+                    resetForm('hizli-musteri-form');
+                    
+                    // Yeni müşteriyi seç
+                    selectMusteri(result.data.id, result.data.adSoyad, result.data.telefon);
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Hızlı cihaz ekle
+        async function handleHizliCihazSubmit(e) {
+            e.preventDefault();
+            
+            if (!selectedMusteriId) {
+                showToast('Önce müşteri seçmelisiniz', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('hizli-cihaz-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span>';
+            
+            try {
+                const data = {
+                    musteriId: selectedMusteriId,
+                    cihazTanimId: document.getElementById('hizli-cihaz-tanim').value,
+                    seriNo: document.getElementById('hizli-seri-no').value || null,
+                    imei: document.getElementById('hizli-imei').value || null,
+                    renk: document.getElementById('hizli-renk').value || null
+                };
+                
+                const result = await CihazlarAPI.create(data);
+                
+                if (result?.success) {
+                    showToast('Cihaz eklendi', 'success');
+                    closeModal('yeni-cihaz-modal');
+                    resetForm('hizli-cihaz-form');
+                    
+                    // Müşterinin cihazlarını yeniden yükle
+                    await loadMusteriCihazlari(selectedMusteriId);
+                    
+                    // Yeni cihazı seç
+                    selectCihaz(result.data.id, result.data.marka + ' ' + result.data.model, result.data.seriNo || '-');
+                } else {
+                    showToast(result?.errors?.[0] || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+    </script>
+</body>
+</html>
